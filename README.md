@@ -136,6 +136,149 @@ img :src="require('@/assets/logo.png')" alt=""
             }
 </pre>
 
+# 第十五步 添加三级联动导航栏全局组件
+<pre>
+--- 因为Home、Search 不止一个组件使用了三级联动导航栏 
+    我们决定将TypeNav设置设置为全局组件
+</pre>
 
+# 第十六步 添加Home其他的组件
+<pre>
+--- 列表 ListContainer
+--- 今日推荐 TodayRecommend
+--- 商品排行 Rank
+--- 猜你喜欢 Like
+--- 楼层 Floor
+--- 商标 Brand
+</pre>
+
+# 第十七步 测试接口->三级联动导航栏接口
+<pre>
+    测试接口地址
+    http://39.98.123.211/api/product/getBaseCategoryList
+</pre>
+
+# 第十八步 安装axios 并对axios二次封装 
+<pre>
+---安装axios
+    npm i axios
+---axios的二次封装
+    创建api文件夹
+        ---request.js 对axios二次封装
+        ---index.js 对接口管理并对外暴露
+</pre>
+
+# 第十九步 设置proxy 代理服务器 
+<pre>
+    devServer: {
+        proxy: {
+            '/api': {
+                target: 'http://39.98.123.211',
+            },
+        }
+    }
+</pre>
+
+# 第二十步 封装好三级联动导航栏
+<pre>
+    //三级联动导航栏接口
+    export const reqgetBaseCategoryList = () => {
+        return requests({
+            url: '/product/getBaseCategoryList',
+            method: 'get'
+        })
+    }
+</pre>
+
+# 第二十一步 增加请求进度条的功能
+<pre>
+---安装 进度条插件 NProgress
+    npm i nprogress
+---使用 在request拦截器里面进行使用
+    引用：
+    import NProgress from 'nprogress'
+    import "nprogress/nprogress.css"
+    使用：
+    NProgress.start();
+    NProgress.done();
+</pre>
+
+# 第二十二步 为项目添加Vuex
+<pre>
+---安装 VueX 插件
+    npm i vuex
+---使用 
+    ---store
+        ---index.js
+
+    import Vue from 'vue'
+    import Vuex from 'vuex'
+    Vue.use(Vuex)
+
+    export default new Vuex.Store({
+
+    })
+
+</pre>
+
+# 第二十三步 模块化Vuex
+<pre>
+    ---store
+        ---index.js
+        ---home
+            ---index.js
+        ---search
+            ---index.js
+</pre>
+
+# 第二十四步 三级联动导航栏 通过vuex 调用数据
+<pre>
+---store
+    ---home
+        ---index.js 核心代码：
+
+    async getBaseCategoryList({ commit }) {
+        const result = await reqgetBaseCategoryList();
+        if (result.code == 200) {
+            commit("SETCATEGIRYLIST", result.data)
+        }
+    }
+
+---components
+    ---TypeNav
+        ---index.js 核心代码
+
+    computed: {
+    ...mapState("home", ["CategoryList"]),
+    },
+    mounted() {
+    this.$store.dispatch("home/getBaseCategoryList");
+    },
+</pre>
+
+# 第二十五步 使用vue的方式为一级菜单设置鼠标移动上去的背景颜色
+<pre>
+    核心代码：
+    @mouseenter="setCurrIndex(index)"
+    @mouseleave="clearCurIndex()"
+    :style="{
+    'background-color': index == currentIndex ? '#ccc' : null,
+    }"
+
+    data() {
+        return {
+            currentIndex: -1,
+        };
+    },
+    methods: {
+        setCurrIndex(index) {
+            this.currentIndex = index;
+    },
+        clearCurIndex() {
+            this.currentIndex = -1;
+    },
+    },
+
+</pre>
 
 
