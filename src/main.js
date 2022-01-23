@@ -13,5 +13,8 @@ Vue.config.productionTip = false
 new Vue({
   render: h => h(App),
   router,
-  store
+  store,
+  mounted() {
+    this.$store.dispatch("home/getBaseCategoryList");
+  }
 }).$mount('#app')

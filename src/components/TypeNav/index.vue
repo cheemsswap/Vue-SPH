@@ -1,8 +1,8 @@
 <template>
   <div class="type-nav">
-    <div class="container">
-      <h2 class="all">全部商品分类</h2>
-      <nav class="nav">
+    <div class="container" @mouseleave="clearCurIndex()">
+      <h2 class="all" @mouseenter="setCurrIndex(99)">全部商品分类</h2>
+      <nav class="nav" @mouseenter="clearCurIndex()">
         <a href="###">服装城</a>
         <a href="###">美妆馆</a>
         <a href="###">尚品汇超市</a>
@@ -12,73 +12,127 @@
         <a href="###">有趣</a>
         <a href="###">秒杀</a>
       </nav>
-      <div class="sort">
-        <div class="all-sort-list2">
-          <div
-            class="item"
-            v-for="(cate, index) of CategoryList.slice(0, 16)"
-            :key="cate.categoryId"
-            @mouseenter="setCurrIndex(index)"
-            @mouseleave="clearCurIndex()"
-            :style="{
-              'background-color': index == currentIndex ? '#ccc' : null,
-            }"
-          >
-            <h3>
-              <a href="">{{ cate.categoryName }}</a>
-            </h3>
-            <div class="item-list clearfix">
-              <div class="subitem">
-                <dl
-                  class="fore"
-                  v-for="ca of cate.categoryChild"
-                  :key="ca.categoryId"
+      <transition name="fade">
+        <div class="sort" v-show="show">
+          <div class="all-sort-list2">
+            <div
+              @click="goSearch"
+              class="item"
+              v-for="(cate, index) of CategoryList.slice(0, 16)"
+              :key="cate.categoryId"
+              @mouseenter="setCurrIndex(index)"
+              :style="{
+                'background-color': index == currentIndex ? '#ccc' : null,
+              }"
+            >
+              <h3>
+                <a
+                  :data-categoryName="cate.categoryName"
+                  :data-category1Id="cate.categoryId"
+                  >{{ cate.categoryName }}</a
                 >
-                  <dt>
-                    <a href="">{{ ca.categoryName }}</a>
-                  </dt>
-                  <dd>
-                    <em v-for="c of ca.categoryChild" :key="c.categoryId">
-                      <a href="">{{ c.categoryName }}</a>
-                    </em>
-                  </dd>
-                </dl>
+                <!-- <router-link to="/search">{{ cate.categoryName }}</router-link> -->
+              </h3>
+              <div v-show="index == currentIndex" class="item-list clearfix">
+                <div class="subitem">
+                  <dl
+                    class="fore"
+                    v-for="ca of cate.categoryChild"
+                    :key="ca.categoryId"
+                  >
+                    <dt>
+                      <a
+                        :data-categoryName="ca.categoryName"
+                        :data-category2Id="ca.categoryId"
+                        >{{ ca.categoryName }}</a
+                      >
+                      <!-- <router-link to="/search">{{
+                      ca.categoryName
+                    }}</router-link> -->
+                    </dt>
+                    <dd>
+                      <em v-for="c of ca.categoryChild" :key="c.categoryId">
+                        <a
+                          :data-categoryName="c.categoryName"
+                          :data-category3Id="c.categoryId"
+                          >{{ c.categoryName }}</a
+                        >
+                        <!-- <router-link to="/search">{{
+                        c.categoryName
+                      }}</router-link> -->
+                      </em>
+                    </dd>
+                  </dl>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </transition>
     </div>
   </div>
 </template>
 
 <script>
 import { mapState } from "vuex";
+// import _ from "lodash";
+import { throttle, debounce } from "lodash";
 export default {
   name: "TypeNav",
   data() {
     return {
       currentIndex: -1,
+      show: this.$route.path === "/home",
     };
   },
   methods: {
-    setCurrIndex(index) {
+    setCurrIndex: throttle(function (index) {
       this.currentIndex = index;
-    },
-    clearCurIndex() {
+      this.show = true;
+    }, 10),
+    clearCurIndex: function () {
       this.currentIndex = -1;
+      this.show = this.$route.path === "/home";
+    },
+    goSearch(e) {
+      if (e.target.tagName == "A") {
+        const { categoryname, category1id, category2id, category3id } =
+          e.target.dataset;
+        this.$router.push({
+          path: "/search",
+          query: {
+            categoryName: categoryname,
+            category1id,
+            category2id,
+            category3id,
+          },
+        });
+      }
     },
   },
   computed: {
     ...mapState("home", ["CategoryList"]),
   },
   mounted() {
-    this.$store.dispatch("home/getBaseCategoryList");
+    // this.$store.dispatch("home/getBaseCategoryList");
   },
 };
 </script>
 
 <style lang="less" scoped>
+.fade-enter-active {
+  animation: dw 0.25s;
+  overflow: hidden;
+}
+.fade-leave-active {
+  animation: dw reverse 0.25s;
+  overflow: hidden;
+}
+@keyframes dw {
+  0% {
+    height: 0px;
+  }
+}
 .type-nav {
   border-bottom: 2px solid #e1251b;
 
@@ -132,9 +186,11 @@ export default {
               color: #333;
             }
           }
-
+          a {
+            cursor: pointer;
+          }
           .item-list {
-            display: none;
+            // display: none;
             position: absolute;
             width: 734px;
             min-height: 460px;
@@ -187,11 +243,11 @@ export default {
             }
           }
 
-          &:hover {
-            .item-list {
-              display: block;
-            }
-          }
+          // &:hover {
+          //   .item-list {
+          //     display: block;
+          //   }
+          // }
         }
       }
     }

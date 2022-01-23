@@ -121,7 +121,7 @@ img :src="require('@/assets/logo.png')" alt=""
     }
 </pre>
 # 第十四步 重复点击搜索按钮，会出现 NavNavigationDuplicated: Avoided redundant navigation to current location: "/search?keyWord=12". 的错误
-</pre>
+<pre>
 ---普通方法: $router 是 promise风格的 捕获住错误不输出就ok
 ---一劳永逸方法(不建议，不如随时就接住异常): 
     ---router
@@ -281,4 +281,86 @@ img :src="require('@/assets/logo.png')" alt=""
 
 </pre>
 
+# 第二十六步 将三级导航展示 修改成js版本
+<pre>
+    注释css样式
+    增加v-show进行判定隐藏和显示
+</pre>
 
+# 第二十七步 为项目添加防抖和节流库 并对三级导航使用
+<pre>
+--- 安装插件 Lodash
+    npm i lodash
+--- 引用lodash
+    全部引用
+        import _ from "lodash";
+        使用代码如下：
+        setCurrIndex: _.throttle(function (index) {
+            this.currentIndex = index;
+        }, 20),
+    
+    部分引用
+        import throttle from "lodash/throttle";
+        使用代码如下：
+        setCurrIndex: throttle(function (index) {
+            this.currentIndex = index;
+        }, 20),
+</pre>
+
+# 第二十八步 使用三级导航路由跳转+事件委派+自定义传参的应用
+<pre>
+    核心代码：
+
+    <div @click="goSearch" >
+        <a
+            :data-categoryName="cate.categoryName"
+            :data-category1Id="cate.categoryId"
+            >{{ cate.categoryName }}
+        </a>
+    </div>
+
+    goSearch(e) {
+        //判读是否为a标签
+      if (e.target.tagName == "A") {
+        //提取a标签里面的自定义data属性 注意被提取被转为小写的了
+        const { categoryname,
+                category1id,
+                category2id,
+                category3id 
+        } = e.target.dataset;
+        //编程式路由导航
+        this.$router.push({
+          path: "/search",
+          query: {
+            categoryName: categoryname,
+            category1id,
+            category2id,
+            category3id,
+          },
+        });
+      }
+    },
+</pre>
+
+# 第二十九步 Search模块引用导航栏
+<pre>
+1、search模块使用TypeNav导航栏
+---views
+    ---Search
+        ---index 使用TypeNav
+2、修改TypeNav在home路由下常驻显示 在search路由下只有活动的时候才显示
+3、增加search活动显示的动画效果
+</pre>
+
+# 第三十步 为Header 搜索按钮增加 追加上次query的效果
+<pre>
+    核心代码：
+    search() {
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          keyWord: this.serachKeyWord,
+        },
+      });
+    },
+</pre>

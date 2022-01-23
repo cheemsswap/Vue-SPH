@@ -25,7 +25,8 @@ requests.interceptors.response.use((data) => {
 }, (error) => {
     //失败的回调
     NProgress.done();
-    return new Promise.reject(new Error("faile"))
+    console.log(error.message);
+    //return new Promise.reject(new Error("faile"))
 })
 
 //对外暴露
