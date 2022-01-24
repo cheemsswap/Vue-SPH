@@ -64,6 +64,7 @@ export default {
     //搜索按钮回调
     search() {
       this.$router.push({
+        path: "/search",
         query: {
           ...this.$route.query,
           keyWord: this.serachKeyWord,

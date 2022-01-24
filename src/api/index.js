@@ -8,3 +8,19 @@ export const reqgetBaseCategoryList = () => {
         method: 'get'
     })
 }
+
+//home-》bannder轮播图
+export const reqgetBannderList = () => {
+    return requests({
+        url: '/bannder',
+        method: 'get'
+    })
+}
+
+//home-》Floor 楼层
+export const reqgetFloorList = () => {
+    return requests({
+        url: '/floor',
+        method: 'get'
+    })
+}

@@ -3,28 +3,14 @@
     <div class="sortList clearfix">
       <div class="center">
         <!--banner轮播-->
-        <div class="swiper-container" id="mySwiper">
-          <div class="swiper-wrapper">
-            <div class="swiper-slide">
-              <img src="./images/banner1.jpg" />
-            </div>
-            <!-- <div class="swiper-slide">
-              <img src="./images/banner2.jpg" />
-            </div>
-            <div class="swiper-slide">
-              <img src="./images/banner3.jpg" />
-            </div>
-            <div class="swiper-slide">
-              <img src="./images/banner4.jpg" />
-            </div> -->
-          </div>
-          <!-- 如果需要分页器 -->
-          <div class="swiper-pagination"></div>
-
-          <!-- 如果需要导航按钮 -->
-          <div class="swiper-button-prev"></div>
-          <div class="swiper-button-next"></div>
-        </div>
+        <el-carousel height="464px">
+          <el-carousel-item v-for="item in BannderList" :key="item.id">
+            <img
+              :src="item.imaUrl"
+              :style="{ height: '100%', height: '100%' }"
+            />
+          </el-carousel-item>
+        </el-carousel>
       </div>
       <div class="right">
         <div class="news">
@@ -100,8 +86,15 @@
 </template>
 
 <script>
+import { mapState } from "vuex";
 export default {
   name: "ListContainer",
+  computed: {
+    ...mapState("home", ["BannderList"]),
+  },
+  mounted() {
+    this.$store.dispatch("home/getBannderList");
+  },
 };
 </script>
 
@@ -120,6 +113,7 @@ export default {
       height: 100%;
       padding: 5px;
       float: left;
+      overflow: hidden;
     }
 
     .right {

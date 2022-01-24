@@ -310,7 +310,8 @@ img :src="require('@/assets/logo.png')" alt=""
 # 第二十八步 使用三级导航路由跳转+事件委派+自定义传参的应用
 <pre>
     核心代码：
-
+    
+    ```html
     <div @click="goSearch" >
         <a
             :data-categoryName="cate.categoryName"
@@ -318,6 +319,7 @@ img :src="require('@/assets/logo.png')" alt=""
             >{{ cate.categoryName }}
         </a>
     </div>
+    ```
 
     goSearch(e) {
         //判读是否为a标签
@@ -363,4 +365,135 @@ img :src="require('@/assets/logo.png')" alt=""
         },
       });
     },
+</pre>
+
+# 第三十一步 安装mock 制作假接口 并使用
+<pre>
+安装mockjs
+--- npm install mockjs
+
+创建文件夹 mock
+    ---bannder.json
+    ---floor.json
+    ---mockServe.js
+在public下创建文件夹 images
+    将listContaniner和floor需要的图片拷贝进去
+</pre>
+
+# 第三十二步 Home->listContainer 使用mock制作的假接口
+<pre>
+--- api 
+    index.js
+    核心代码：
+    export const reqgetBannderList = () => {
+    return requests({
+        url: '/bannder',
+        method: 'get'
+    })
+--- store
+    ---home 
+        ---index.js
+    核心代码：
+        const state = {
+            BannderList: []
+        }
+        const mutations = {
+            SETBANNDERLIST(state, data) {
+                state.BannderList = data
+            }
+        }
+        const actions = {
+            async getBannderList({ commit }) {
+                const result = await reqgetBannderList();
+                if (result.code == 200) {
+                    commit("SETBANNDERLIST", result.data)
+                }
+            }
+        }
+---view
+    --Home
+        ---ListContainer
+        核心代码：
+        computed: {
+            ...mapState("home", ["BannderList"]),
+        },
+        mounted() {
+            this.$store.dispatch("home/getBannderList");
+        },
+</pre>
+# 第三十三步 引用element UI 为home添加走马灯
+<pre>
+安装element UI
+--- npm i element-ui -S
+注册全局走马灯组件
+import { Carousel, CarouselItem } from 'element-ui';
+import 'element-ui/lib/theme-chalk/index.css';
+Vue.component(Carousel.name, Carousel);
+Vue.component(CarouselItem.name, CarouselItem);
+
+在home->listContainer 使用
+    ```html
+    <el-carousel height="464px">
+    <el-carousel-item v-for="item in BannderList" :key="item.id">
+        <img :src="item.imaUrl" :style="{ height: '100%' }" />
+    </el-carousel-item>
+    </el-carousel>
+    ```
+</pre>
+
+# 第三十四步 开发home->floor
+<pre>
+    1、设置api接口
+    ---api
+        ---index.js
+    核心代码:
+    export const reqgetFloorList = () => {
+        return requests({
+            url: '/floor',
+            method: 'get'
+        })
+    }
+    2、添加vuex在home模块下的内容
+    ---store
+        ---home
+            ---index.js
+    核心代码:
+    const state = {
+        FloorList: []
+    }
+    const mutations = {
+        SETFLOORLIST(state, data) {
+        state.FloorList = data
+    }
+    }
+    const actions = {
+        async getFloorList({ commit }) {
+        const result = await reqgetFloorList();
+        if (result.code == 200) {
+            commit("SETFLOORLIST", result.data)
+        }
+    }
+    步骤3、home下使用vuex -> 调用api 然后接住数据
+    ---views
+        ---home
+            ---index.vue
+        
+        核心代码:
+        ```html
+        <Floor v-for="floor of FloorList" :key="floor.id" :floor="floor" />
+        ```
+
+        computed: {
+            ...mapState("home", ["FloorList"]),
+        },
+        mounted() {
+            this.$store.dispatch("home/getFloorList");
+        },
+    步骤四、view->Home->Floor 接受pros数据 并展示
+    ---view
+        ---Home
+            ---Floor
+                ---index.js
+    具体看文件里面的代码
+}
 </pre>

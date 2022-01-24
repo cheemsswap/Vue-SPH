@@ -6,9 +6,14 @@ import store from '@/store'
 import TypeNav from '@/components/TypeNav'
 Vue.component(TypeNav.name, TypeNav)
 
-
-
 Vue.config.productionTip = false
+
+import '@/mock/mockServe'
+
+import { Carousel, CarouselItem } from 'element-ui';
+import 'element-ui/lib/theme-chalk/index.css';
+Vue.component(Carousel.name, Carousel);
+Vue.component(CarouselItem.name, CarouselItem);
 
 new Vue({
   render: h => h(App),
