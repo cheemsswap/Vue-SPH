@@ -312,6 +312,7 @@ img :src="require('@/assets/logo.png')" alt=""
     核心代码：
     
     ```html
+    <!---
     <div @click="goSearch" >
         <a
             :data-categoryName="cate.categoryName"
@@ -319,6 +320,7 @@ img :src="require('@/assets/logo.png')" alt=""
             >{{ cate.categoryName }}
         </a>
     </div>
+    --->
     ```
 
     goSearch(e) {
@@ -433,11 +435,13 @@ Vue.component(CarouselItem.name, CarouselItem);
 
 在home->listContainer 使用
     ```html
+    <!---
     <el-carousel height="464px">
     <el-carousel-item v-for="item in BannderList" :key="item.id">
         <img :src="item.imaUrl" :style="{ height: '100%' }" />
     </el-carousel-item>
     </el-carousel>
+    --->
     ```
 </pre>
 
@@ -480,7 +484,9 @@ Vue.component(CarouselItem.name, CarouselItem);
         
         核心代码:
         ```html
+        <!---
         <Floor v-for="floor of FloorList" :key="floor.id" :floor="floor" />
+        --->
         ```
 
         computed: {
