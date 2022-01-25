@@ -7,13 +7,13 @@ const state = {
 }
 const mutations = {
     SETCATEGIRYLIST(state, data) {
-        state.CategoryList = data
+        state.CategoryList = data || []
     },
     SETBANNDERLIST(state, data) {
-        state.BannderList = data
+        state.BannderList = data || []
     },
     SETFLOORLIST(state, data) {
-        state.FloorList = data
+        state.FloorList = data || []
     }
 }
 const actions = {

@@ -45,9 +45,8 @@ const router = new VueRouter({
             component: Search,
             meta: {
                 isShowFooterList: true
-            }
+            },
         },
     ]
 })
-
 export default router
