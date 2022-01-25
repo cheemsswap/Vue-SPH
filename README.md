@@ -311,8 +311,8 @@ img :src="require('@/assets/logo.png')" alt=""
 <pre>
     核心代码：
     
-    ```html
-    <!---
+
+    {% highlight html linenos %}
     <div @click="goSearch" >
         <a
             :data-categoryName="cate.categoryName"
@@ -320,8 +320,7 @@ img :src="require('@/assets/logo.png')" alt=""
             >{{ cate.categoryName }}
         </a>
     </div>
-    --->
-    ```
+    {% endhighlight %}
 
     goSearch(e) {
         //判读是否为a标签
@@ -434,15 +433,13 @@ Vue.component(Carousel.name, Carousel);
 Vue.component(CarouselItem.name, CarouselItem);
 
 在home->listContainer 使用
-    ```html
-    <!---
-    <el-carousel height="464px">
+    {% highlight html linenos %}
+  <el-carousel height="464px">
     <el-carousel-item v-for="item in BannderList" :key="item.id">
         <img :src="item.imaUrl" :style="{ height: '100%' }" />
     </el-carousel-item>
     </el-carousel>
-    --->
-    ```
+    {% endhighlight %}
 </pre>
 
 # 第三十四步 开发home->floor
@@ -483,12 +480,9 @@ Vue.component(CarouselItem.name, CarouselItem);
             ---index.vue
         
         核心代码:
-        ```html
-        <!---
+        {% highlight html linenos %}
         <Floor v-for="floor of FloorList" :key="floor.id" :floor="floor" />
-        --->
-        ```
-
+        {% endhighlight %}
         computed: {
             ...mapState("home", ["FloorList"]),
         },
@@ -503,3 +497,121 @@ Vue.component(CarouselItem.name, CarouselItem);
     具体看文件里面的代码
 }
 </pre>
+
+# 第三十五步 将search的静态页面拆成组件 
+<pre>
+---view
+    ---Search
+        ---Bread
+            ---index.vue
+            ---images
+        ---Details
+            ---index.vue
+            ---images
+        ---Hotsale
+            ---index.vue
+            ---images
+        ---Selector
+            ---index.vue
+            ---images
+</pre>
+
+# 第三十六步 开发search 调用api获取数据
+<pre>
+    1、首先先配置api
+    ---api
+        ---index.js
+        export const reqgetSearchInfo = (req) => {
+            return requests({
+                url: '/list',
+                method: 'post',
+                data: req
+            })
+        }
+    2、配置vuex
+    ---store
+        ---search
+            ---index.js
+            const state = {
+                SearchInfo: {}
+            }
+            const mutations = {
+                SETSEARCHINFO(states, data) {
+                    states.SearchInfo = data || {}
+                }
+            }
+            const actions = {
+                async getSearchInfo({ commit }, req) {
+                    const request = await reqgetSearchInfo(req);
+                        if (request.code == 200) {
+                            commit("SETSEARCHINFO", request.data)
+                        }
+                    }
+            }
+    3、在search模块调用接口 使用路由组件守卫
+    beforeRouteEnter(to, from, next) {
+        next((vm) => {
+            const info = vm.$route.query;
+            vm.$store.dispatch("search/getSearchInfo", info);
+        });
+    },
+    beforeRouteUpdate(to, from, next) {
+        const info = to.query;
+        this.$store.dispatch("search/getSearchInfo", info);
+        next();
+    },
+</pre>
+
+# 第三十七步 优化search中store部分 使用getter将数据进行解析
+<pre>
+    1、store->search 增加getter内容
+    ---store
+        ---search
+            ---index.js
+        const getters = {
+            trademarkList(states) {
+                return states.SearchInfo.trademarkList || []
+            },
+            attrsList(states) {
+                return states.SearchInfo.attrsList || []
+            },
+            goodsList(states) {
+                return states.SearchInfo.goodsList || []
+            },
+            total(states) {
+                return states.SearchInfo.total
+            },
+            pageSize(states) {
+                return states.SearchInfo.pageSize   
+            },
+            pageNo(states) {
+                return states.SearchInfo.pageNo
+            },
+            totalPages(states) {
+                return states.SearchInfo.totalPages 
+            }
+        }
+    2、view->Search使用
+        computed: {
+        // ...mapState("search", ["SearchInfo"]),
+        ...mapGetters("search", ["trademarkList", "attrsList", "goodsList"]),
+        }, 
+    3、给组件传值
+
+    {% highlight html linenos %}
+    <Selector :trademarkList="trademarkList" :attrsList="attrsList" />
+    <Details :goodsList="goodsList" />
+    {% endhighlight %}
+
+    4、这2个组件分别接受 这些传来的参数
+    具体查看
+    ---view
+        ---Search
+            ---Selector
+                ---index.js  这个文件
+    ---view
+        ---Search
+            ---Details
+                ---index.js  这个文件
+</pre>
+
