@@ -615,3 +615,148 @@ Vue.component(CarouselItem.name, CarouselItem);
                 ---index.js  这个文件
 </pre>
 
+# 第三十八步 增加Search中的面包屑的功能 上
+<pre>
+    面包屑位于
+    ---view
+        ---Search
+            ---Bread
+                ---index.js
+    1、需要Search 给 Bread 传递 keyword 和 categoryName 和 trademark
+        或者 Bread 直接从路由的信息里面获取也可以
+    2、Berad组件获取到keyword和categoryName和trademark 进行展示
+    3、为这2个传递的参数使用v-if 进行展示，并且增加点击事件
+        3.1、为trademark的移除操作能够清除Home组件下的keyword设置为空 添加了事件总线的方式
+    4、点击事件 进行编程式路由 跳转
+</pre>
+
+# 第三十九步 增加Search中的面包屑的功能 下
+<pre>
+    增加商品属性的参数
+    1、为商品属性添加点击事件-》添加到路由里面
+    ---view
+        ---Search
+            ---Selector
+                ---index.js
+    使用事件代理的方式
+    核心代码：
+    ```html
+        <ul class="type-list" @click="addProps">
+            <li v-for="attrValue of attrs.attrValueList" :key="attrValue">
+            <a
+                :data-id="attrs.attrId"
+                :data-value="attrValue"
+                :data-name="attrs.attrName"
+                >{{ attrValue }}</a
+            >
+            </li>
+        </ul>
+    ```
+    addProps(event) {
+      const { id, name, value } = event.target.dataset;
+      if (id) {
+        const props = [...(this.$route.query.props || [])];
+        props.push(`${id}:${value}:${name}`);
+
+        this.$router.push({
+          query: {
+            ...this.$route.query,
+            props,
+          },
+        });
+      }
+    }
+    2、在面包屑 展示 并 能够删除掉
+    ---view
+        ---Search
+            ---Bread
+                ---index.js
+    核心代码:
+    ```html
+    <li
+    class="with-x"
+    v-for="(p, index) of props"
+    :key="`${p}+${index}`"
+    @click="clearProps(p)"
+    >
+        {{ p.split(":")[1] }}<i>×</i>
+    </li>
+    ```
+    clearProps(p) {
+      const props = [...this.props];
+      props.splice(
+        props.findIndex((e) => e == p),
+        1
+      );
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          props,
+        },
+      });
+    },
+</pre>
+
+# 第四十步 修复面包屑bug
+<pre>
+    具体查看 问题复现->demo1
+    当props里面的参数只有一个的时候 刷新网页
+    ["abc"] 会识别成string  在v-for 的时候会出现问题 会被当成字符串进行解析
+    对于字符串的数组 保存数据的时候 要切记尽量避开这个内容
+</pre>
+
+# 第四十一步 增加Search 综合 和 价格 的升序或者降序
+<pre>
+    核心代码：
+    ```html
+    <ul class="sui-nav">
+        <li :class="{ active: ComprehenSive }" @click="updateComprehenSive">
+            <a v-show="ComprehenSive == 1">综合⬆</a>
+            <a v-show="ComprehenSive == -1">综合⬇</a>
+            <a v-show="ComprehenSive == 0">综合</a>
+        </li>
+        <li :class="{ active: Price }" @click="updatePrice">
+            <a v-show="Price == 1">价格⬆</a>
+            <a v-show="Price == -1">价格⬇</a>
+            <a v-show="Price == 0">价格</a>
+        </li>
+    </ul>
+    ```
+    data() {
+        return {
+            //0代表 未激活，-1代表降序  1代表升序
+            ComprehenSive: 1,
+            Price: 0,
+        };
+    },
+    methods: {
+        updatePrice() {
+            this.ComprehenSive = 0;
+            if (this.Price == 0) {
+                this.Price = 1;
+            } else {
+                this.Price = -this.Price;
+            }
+            this.$router.push({
+                query: {
+                    ...this.$route.query,
+                    order: `2:${this.Price == 1 ? "asc" : "desc"}`,
+                },
+            });
+        },
+        updateComprehenSive() {
+            this.Price = 0;
+        if (this.ComprehenSive == 0) {
+            this.ComprehenSive = 1;
+        } else {
+            this.ComprehenSive = -this.ComprehenSive;
+        }
+        this.$router.push({
+            query: {
+                ...this.$route.query,
+                order: `1:${this.ComprehenSive == 1 ? "asc" : "desc"}`,
+            },
+        });
+        },
+    },
+</pre>

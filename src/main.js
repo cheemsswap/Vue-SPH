@@ -10,13 +10,17 @@ Vue.config.productionTip = false
 
 import '@/mock/mockServe'
 
-import { Carousel, CarouselItem } from 'element-ui';
+import { Carousel, CarouselItem, Pagination } from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
 Vue.component(Carousel.name, Carousel);
 Vue.component(CarouselItem.name, CarouselItem);
+Vue.component(Pagination.name, Pagination);
 
 new Vue({
   render: h => h(App),
+  beforeCreate() {
+    Vue.prototype.$bus = this
+  },
   router,
   store,
   mounted() {

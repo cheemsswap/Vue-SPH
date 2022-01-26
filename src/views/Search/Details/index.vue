@@ -3,23 +3,15 @@
     <div class="sui-navbar">
       <div class="navbar-inner filter">
         <ul class="sui-nav">
-          <li class="active">
-            <a href="#">综合</a>
+          <li :class="{ active: ComprehenSive }" @click="updateComprehenSive">
+            <a v-show="ComprehenSive == 1">综合⬆</a>
+            <a v-show="ComprehenSive == -1">综合⬇</a>
+            <a v-show="ComprehenSive == 0">综合</a>
           </li>
-          <li>
-            <a href="#">销量</a>
-          </li>
-          <li>
-            <a href="#">新品</a>
-          </li>
-          <li>
-            <a href="#">评价</a>
-          </li>
-          <li>
-            <a href="#">价格⬆</a>
-          </li>
-          <li>
-            <a href="#">价格⬇</a>
+          <li :class="{ active: Price }" @click="updatePrice">
+            <a v-show="Price == 1">价格⬆</a>
+            <a v-show="Price == -1">价格⬇</a>
+            <a v-show="Price == 0">价格</a>
           </li>
         </ul>
       </div>
@@ -62,42 +54,54 @@
         </li>
       </ul>
     </div>
-    <div class="fr page">
-      <div class="sui-pagination clearfix">
-        <ul>
-          <li class="prev disabled">
-            <a href="#">«上一页</a>
-          </li>
-          <li class="active">
-            <a href="#">1</a>
-          </li>
-          <li>
-            <a href="#">2</a>
-          </li>
-          <li>
-            <a href="#">3</a>
-          </li>
-          <li>
-            <a href="#">4</a>
-          </li>
-          <li>
-            <a href="#">5</a>
-          </li>
-          <li class="dotted"><span>...</span></li>
-          <li class="next">
-            <a href="#">下一页»</a>
-          </li>
-        </ul>
-        <div><span>共10页&nbsp;</span></div>
-      </div>
+    <div style="display: flex; justify-content: center">
+      <el-pagination background layout="prev, pager, next" :total="1000">
+      </el-pagination>
     </div>
   </div>
 </template>
 
 <script>
 export default {
+  data() {
+    return {
+      //0代表 未激活，-1代表降序  1代表升序
+      ComprehenSive: 1,
+      Price: 0,
+    };
+  },
   name: "Details",
   props: ["goodsList"],
+  methods: {
+    updatePrice() {
+      this.ComprehenSive = 0;
+      if (this.Price == 0) {
+        this.Price = 1;
+      } else {
+        this.Price = -this.Price;
+      }
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          order: `2:${this.Price == 1 ? "asc" : "desc"}`,
+        },
+      });
+    },
+    updateComprehenSive() {
+      this.Price = 0;
+      if (this.ComprehenSive == 0) {
+        this.ComprehenSive = 1;
+      } else {
+        this.ComprehenSive = -this.ComprehenSive;
+      }
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          order: `1:${this.ComprehenSive == 1 ? "asc" : "desc"}`,
+        },
+      });
+    },
+  },
 };
 </script>
 

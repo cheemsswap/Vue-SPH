@@ -4,7 +4,11 @@
       <div class="fl key brand">品牌</div>
       <div class="value logos">
         <ul class="logo-list">
-          <li v-for="trademark of trademarkList" :key="trademark.tmId">
+          <li
+            v-for="trademark of trademarkList"
+            :key="trademark.tmId"
+            @click="tradeMatkHandler(trademark.tmId, trademark.tmName)"
+          >
             {{ trademark.tmName }}
           </li>
         </ul>
@@ -18,9 +22,14 @@
     <div class="type-wrap" v-for="attrs of attrsList" :key="attrs.attrId">
       <div class="fl key">{{ attrs.attrName }}</div>
       <div class="fl value">
-        <ul class="type-list">
+        <ul class="type-list" @click="addProps">
           <li v-for="attrValue of attrs.attrValueList" :key="attrValue">
-            <a>{{ attrValue }}</a>
+            <a
+              :data-id="attrs.attrId"
+              :data-value="attrValue"
+              :data-name="attrs.attrName"
+              >{{ attrValue }}</a
+            >
           </li>
         </ul>
       </div>
@@ -33,6 +42,31 @@
 export default {
   name: "Selector",
   props: ["trademarkList", "attrsList"],
+  methods: {
+    tradeMatkHandler(id, val) {
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          trademark: `${id}:${val}`,
+        },
+      });
+    },
+    addProps(event) {
+      const { id, name, value } = event.target.dataset;
+      if (id) {
+        const props = new Set([
+          ...(this.$route.query.props || []),
+          `${id}:${value}:${name}`,
+        ]);
+        this.$router.push({
+          query: {
+            ...this.$route.query,
+            props: [...props],
+          },
+        });
+      }
+    },
+  },
 };
 </script>
 

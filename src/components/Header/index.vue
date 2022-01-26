@@ -38,6 +38,7 @@
             id="autocomplete"
             class="input-error input-xxlarge"
             v-model="serachKeyWord"
+            @keydown.enter="search"
           />
           <button
             @click="search"
@@ -71,6 +72,12 @@ export default {
         },
       });
     },
+    clearSearchKeyWord() {
+      this.serachKeyWord = "";
+    },
+  },
+  mounted() {
+    this.$bus.$on("clearSearchKeyWord", this.clearSearchKeyWord);
   },
 };
 </script>
@@ -93,7 +100,6 @@ export default {
         p {
           float: left;
           margin-right: 10px;
-
           .register {
             border-left: 1px solid #b3aeae;
             padding: 0 5px;

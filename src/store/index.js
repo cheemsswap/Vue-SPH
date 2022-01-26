@@ -7,6 +7,6 @@ import search from './search'
 export default new Vuex.Store({
     modules: {
         home,
-        search
+        search,
     }
 })

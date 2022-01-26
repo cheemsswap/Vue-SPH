@@ -98,13 +98,14 @@ export default {
       if (e.target.tagName == "A") {
         const { categoryname, category1id, category2id, category3id } =
           e.target.dataset;
+        this.$bus.$emit("clearSearchKeyWord");
         this.$router.push({
           path: "/search",
           query: {
             categoryName: categoryname,
-            category1id,
-            category2id,
-            category3id,
+            category1Id: category1id,
+            category2Id: category2id,
+            category3Id: category3id,
           },
         });
       }

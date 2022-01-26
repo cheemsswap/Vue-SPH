@@ -3,7 +3,12 @@
     <TypeNav />
     <div class="main">
       <div class="py-container">
-        <Bread />
+        <Bread
+          :categoryName="categoryName"
+          :keyword="keyword"
+          :trademark="trademark"
+          :prop="prop"
+        />
         <Selector :trademarkList="trademarkList" :attrsList="attrsList" />
         <Details :goodsList="goodsList" />
         <Hotsale />
@@ -24,6 +29,18 @@ export default {
   computed: {
     // ...mapState("search", ["SearchInfo"]),
     ...mapGetters("search", ["trademarkList", "attrsList", "goodsList"]),
+    categoryName() {
+      return this.$route.query.categoryName;
+    },
+    keyword() {
+      return this.$route.query.keyWord;
+    },
+    trademark() {
+      return this.$route.query.trademark;
+    },
+    prop() {
+      return this.$route.query.props;
+    },
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
@@ -33,7 +50,7 @@ export default {
         category3Id: "",
         categoryName: "",
         keyword: "",
-        order: "1:desc",
+        order: "1:asc",
         pageNo: 1,
         pageSize: 10,
         props: [],
@@ -50,7 +67,7 @@ export default {
       category3Id: "",
       categoryName: "",
       keyword: "",
-      order: "1:desc",
+      order: "1:asc",
       pageNo: 20,
       pageSize: 10,
       props: [],
