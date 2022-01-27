@@ -10,7 +10,7 @@
           :prop="prop"
         />
         <Selector :trademarkList="trademarkList" :attrsList="attrsList" />
-        <Details :goodsList="goodsList" />
+        <Details :goodsList="goodsList" :totalPages="totalPages" />
         <Hotsale />
       </div>
     </div>
@@ -28,7 +28,12 @@ export default {
   name: "Search",
   computed: {
     // ...mapState("search", ["SearchInfo"]),
-    ...mapGetters("search", ["trademarkList", "attrsList", "goodsList"]),
+    ...mapGetters("search", [
+      "trademarkList",
+      "attrsList",
+      "goodsList",
+      "totalPages",
+    ]),
     categoryName() {
       return this.$route.query.categoryName;
     },
@@ -52,7 +57,7 @@ export default {
         keyword: "",
         order: "1:asc",
         pageNo: 1,
-        pageSize: 10,
+        pageSize: 3,
         props: [],
         trademark: "",
         ...vm.$route.query,
@@ -68,8 +73,8 @@ export default {
       categoryName: "",
       keyword: "",
       order: "1:asc",
-      pageNo: 20,
-      pageSize: 10,
+      pageNo: 1,
+      pageSize: 3,
       props: [],
       trademark: "",
       ...to.query,

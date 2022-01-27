@@ -21,9 +21,17 @@
         <li class="yui3-u-1-5" v-for="good of goodsList" :key="good.id">
           <div class="list-wrap">
             <div class="p-img">
-              <a href="item.html" target="_blank"
-                ><img :src="good.defaultImg"
-              /></a>
+              <router-link
+                :to="{
+                  name: 'detail',
+                  params: {
+                    id: good.id,
+                  },
+                }"
+                target="_blank"
+              >
+                <img :src="good.defaultImg" alt="图片裂了 点我" />
+              </router-link>
             </div>
             <div class="price">
               <strong>
@@ -32,9 +40,7 @@
               </strong>
             </div>
             <div class="attr">
-              <a target="_blank" href="item.html" :title="good.title">{{
-                good.title
-              }}</a>
+              <a target="_blank" :title="good.title">{{ good.title }}</a>
             </div>
             <div class="commit">
               <i class="command">已有<span>2000</span>人评价</i>
@@ -55,7 +61,13 @@
       </ul>
     </div>
     <div style="display: flex; justify-content: center">
-      <el-pagination background layout="prev, pager, next" :total="1000">
+      <el-pagination
+        background
+        layout="prev, pager, next"
+        :total="totalPages * 10"
+        @current-change="changePage"
+        :current-page="parseInt(currentPage)"
+      >
       </el-pagination>
     </div>
   </div>
@@ -71,7 +83,13 @@ export default {
     };
   },
   name: "Details",
-  props: ["goodsList"],
+  props: ["goodsList", "totalPages"],
+  computed: {
+    currentPage() {
+      //返回当前页数
+      return this.$route.query.pageNo || 1;
+    },
+  },
   methods: {
     updatePrice() {
       this.ComprehenSive = 0;
@@ -98,6 +116,14 @@ export default {
         query: {
           ...this.$route.query,
           order: `1:${this.ComprehenSive == 1 ? "asc" : "desc"}`,
+        },
+      });
+    },
+    changePage(val) {
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          pageNo: val,
         },
       });
     },

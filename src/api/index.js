@@ -45,3 +45,10 @@ export const reqgetSearchInfo = (req) => {
         data: req
     })
 }
+
+export const reqgetDetailsInfo = (skuId) => {
+    return requests({
+        url: `/item/${skuId}`,
+        method: 'get',
+    })
+}

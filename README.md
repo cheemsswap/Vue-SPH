@@ -760,3 +760,172 @@ Vue.component(CarouselItem.name, CarouselItem);
         },
     },
 </pre>
+# 第四十二步 增加Search 分页器
+<pre>
+    使用elementUi 的分页器
+    1、引用elementui的分页器  注册为全局组件
+    ---main.js
+    import {Pagination } from 'element-ui';
+    Vue.component(Pagination.name, Pagination);
+    2、在Search->Details下使用 这个分页器
+    ```html
+    <div style="display: flex; justify-content: center">
+      <el-pagination
+        background
+        layout="prev, pager, next"
+        :total="totalPages * 10"
+        @current-change="changePage"
+        :current-page="currentPage"
+      >
+      </el-pagination>
+    </div>
+    ```
+    3、增加一个当前页码的变量 通过路由获取，如果路由没有 则会默认为1
+    computed: {
+        currentPage() {
+            //返回当前页数
+            return this.$route.query.pageNo || 1;
+        },
+    },
+    4、为点击跳转页码增加点击事件
+    changePage(val) {
+        this.$router.push({
+            query: {
+                ...this.$route.query,
+                pageNo: val,
+            },
+        });
+    },
+</pre>
+
+# 第四十三步 商品详情页面 静态页面
+<pre>
+    ---view
+        ---Detail
+            ---images
+            ---ImageList
+                ---index.js
+            ---Zoom
+                ---index.js
+            index.js
+</pre>
+
+# 第四十四步 设置商品跳转路由 和 Detail路由
+<pre>
+    ---view
+        ---Search
+            ---Details
+                ---index.js
+    核心代码：
+    <router-link
+        :to="{
+            name: 'detail',
+            params: {
+            id: good.id,
+            },
+        }"
+        target="_blank"
+        >
+        <img :src="good.defaultImg" alt="图片裂了 点我" />
+    </router-link>
+
+    ---router
+        ---index.js
+    核心代码:
+        import { reqgetDetailsInfo } from '@/api'
+        const state = {
+            DetailsInfo: {}
+        }
+        const mutations = {
+            SETDETAILSINFO(states, data) {
+                states.DetailsInfo = data
+            }
+        }
+        const actions = {
+            async getDetailsInfo({ commit }, skuId) {
+                const result = await reqgetDetailsInfo(skuId);
+                if (result.code == 200) {
+                    commit("SETDETAILSINFO", result.data)
+                }
+            },
+        }
+        const getters = {
+            categoryView(states) {
+                return states.DetailsInfo.categoryView || {}
+            },
+            price(states) {
+                return states.DetailsInfo.price || 0
+            },
+            skuInfo(states) {
+                return states.DetailsInfo.skuInfo || {}
+            },
+            spuSaleAttrList(states) {
+                return states.DetailsInfo.spuSaleAttrList || []
+            }
+        }
+        export default {
+        namespaced: true,
+        state,
+        mutations,
+        actions,
+        getters
+        }
+</pre>
+# 第四十五步 Details通过路由钩子提交请求 并获取来自Vuex中的数据并展示
+<pre>
+    核心代码：
+    ---view
+        ---Detail
+            ---index.js
+    computed: {
+        ...mapGetters("details", [
+            "categoryView",
+            "price",
+            "skuInfo",
+            "spuSaleAttrList",
+        ]),
+    },
+    beforeRouteEnter(to, from, next) {
+        next((vm) => {
+            vm.$store.dispatch("details/getDetailsInfo", to.params.id);
+        });
+    },
+    beforeRouteUpdate(to, from, next) {
+        this.$store.dispatch("details/getDetailsInfo", to.params.id);
+        next();
+    },
+</pre>
+# 第四十六步 Details详情页 对选购数量部分进行加工
+<pre>
+    ---view
+        ---Detail
+            ---index.js
+    核心代码:
+    ```html
+    <div class="controls">
+        <input autocomplete="off" class="itxt" v-model.number="num" />
+        <a href="javascript:" class="plus" @click="addNum">+</a>
+        <a href="javascript:" class="mins" @click="subNum">-</a>
+    </div>
+    ```  
+    data() {
+        return {
+            num: 1,
+        };
+    },
+    watch: {
+        num(val) {
+            if (typeof val != "number") this.num = 1;
+            if (val <= 0) this.num = 1;
+            this.num = parseInt(this.num);
+        },
+    },
+    methods: {
+        addNum() {
+            this.num++;
+        },
+        subNum() {
+            this.num--;
+        },
+    },
+</pre>

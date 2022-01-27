@@ -13,6 +13,7 @@ import Home from '@/views/Home'
 import Login from '@/views/Login'
 import Register from '@/views/Register'
 import Search from '@/views/Search'
+import Detail from '@/views/Detail'
 const router = new VueRouter({
     routes: [
         {
@@ -47,6 +48,22 @@ const router = new VueRouter({
                 isShowFooterList: true
             },
         },
-    ]
+        {
+            path: '/detail/:id',
+            name: "detail",
+            component: Detail,
+            meta: {
+                isShowFooterList: true
+            },
+        },
+    ],
+    scrollBehavior(to, from, savedPosition) {
+        if (savedPosition) {
+            return savedPosition
+        } else {
+            if (to.name === 'detail')
+                return { x: 0, y: 0 }
+        }
+    }
 })
 export default router

@@ -27,3 +27,4 @@ new Vue({
     this.$store.dispatch("home/getBaseCategoryList");
   }
 }).$mount('#app')
+

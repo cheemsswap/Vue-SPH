@@ -69,6 +69,7 @@ export default {
         query: {
           ...this.$route.query,
           keyWord: this.serachKeyWord,
+          pageNo: 1,
         },
       });
     },
