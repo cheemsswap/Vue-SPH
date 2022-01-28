@@ -16,8 +16,13 @@
         <!-- 左侧放大镜区域 -->
         <div class="previewWrap">
           <!--放大镜效果-->
-          <Zoom :Img="skuInfo.skuDefaultImg" />
+          <Zoom :Img="skuImg || skuInfo.skuDefaultImg" />
+          <ImageList
+            :skuImageList="skuInfo.skuImageList"
+            @setskuImg="setskuImg"
+          />
         </div>
+
         <!-- 右侧选择区域布局 -->
         <div class="InfoWrap">
           <div class="goodsDetail">
@@ -332,15 +337,18 @@
 
 <script>
 import Zoom from "./Zoom/Zoom";
+import ImageList from "./ImageList/ImageList";
 import { mapGetters } from "vuex";
 export default {
   name: "Detail",
   components: {
     Zoom,
+    ImageList,
   },
   data() {
     return {
       num: 1,
+      skuImg: undefined,
     };
   },
   watch: {
@@ -356,6 +364,9 @@ export default {
     },
     subNum() {
       this.num--;
+    },
+    setskuImg(url) {
+      this.skuImg = url;
     },
   },
   computed: {

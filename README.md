@@ -929,3 +929,81 @@ Vue.component(CarouselItem.name, CarouselItem);
         },
     },
 </pre>
+
+# 第四十七步 Details详情页 放大镜效果
+<pre>
+---view
+    ---Detail
+        --Zoom
+            ---index.js
+    核心代码:
+    ```html
+    <div class="spec-preview" @mousemove="move">
+        <img :src="Img" />
+        <div class="event"></div>
+        <div class="big">
+            <img :src="Img" ref="bigimg" />
+        </div>
+        <div class="mask" ref="mask"></div>
+    </div>
+    ```
+    methods: {
+    move(event) {
+      const mask = this.$refs["mask"];
+      const bigimg = this.$refs["bigimg"];
+      mask.style.top = `${
+        (event.offsetY <= 100
+          ? 100
+          : event.offsetY >= 300
+          ? 300
+          : event.offsetY) - 100
+      }px`;
+      mask.style.left = `${
+        (event.offsetX <= 100
+          ? 100
+          : event.offsetX >= 300
+          ? 300
+          : event.offsetX) - 100
+      }px`;
+      bigimg.style.top = `${-((event.offsetY - 100) * 2 <= 0
+        ? 0
+        : (event.offsetY - 100) * 2 >= 400
+        ? 400
+        : (event.offsetY - 100) * 2)}px`;
+      bigimg.style.left = `${-((event.offsetX - 100) * 2 <= 0
+        ? 0
+        : (event.offsetX - 100) * 2 >= 400
+        ? 400
+        : (event.offsetX - 100) * 2)}px`;
+    },
+</pre>
+# 第四十八步 Details详情页 放大镜下的小轮播
+<pre>
+    ---view
+        ---Detail
+            ---index.vue
+    核心代码:
+    ```html
+    <Zoom :Img="skuImg || skuInfo.skuDefaultImg" />
+    <ImageList
+    :skuImageList="skuInfo.skuImageList"
+    @setskuImg="setskuImg"
+    />
+    ```
+    data() {
+        return {
+            skuImg: undefined,
+        };
+    },
+    methods: {
+        setskuImg(url) {
+            this.skuImg = url;
+        },
+    },
+
+    ---view
+        ---Detail
+            ---ImageList
+                ---ImageList.vue
+    详情查看源文件    
+</pre>

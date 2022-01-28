@@ -1,11 +1,11 @@
 <template>
-  <div class="spec-preview">
+  <div class="spec-preview" @mousemove="move">
     <img :src="Img" />
     <div class="event"></div>
     <div class="big">
-      <img :src="Img" />
+      <img :src="Img" ref="bigimg" />
     </div>
-    <div class="mask"></div>
+    <div class="mask" ref="mask"></div>
   </div>
 </template>
 
@@ -13,6 +13,36 @@
 export default {
   name: "Zoom",
   props: ["Img"],
+  methods: {
+    move(event) {
+      const mask = this.$refs["mask"];
+      const bigimg = this.$refs["bigimg"];
+      mask.style.top = `${
+        (event.offsetY <= 100
+          ? 100
+          : event.offsetY >= 300
+          ? 300
+          : event.offsetY) - 100
+      }px`;
+      mask.style.left = `${
+        (event.offsetX <= 100
+          ? 100
+          : event.offsetX >= 300
+          ? 300
+          : event.offsetX) - 100
+      }px`;
+      bigimg.style.top = `${-((event.offsetY - 100) * 2 <= 0
+        ? 0
+        : (event.offsetY - 100) * 2 >= 400
+        ? 400
+        : (event.offsetY - 100) * 2)}px`;
+      bigimg.style.left = `${-((event.offsetX - 100) * 2 <= 0
+        ? 0
+        : (event.offsetX - 100) * 2 >= 400
+        ? 400
+        : (event.offsetX - 100) * 2)}px`;
+    },
+  },
 };
 </script>
 
@@ -61,10 +91,9 @@ export default {
 
     img {
       width: 200%;
-      max-width: 200%;
       height: 200%;
       position: absolute;
-      left: 0;
+      left: 0px;
       top: 0;
     }
   }
