@@ -14,6 +14,8 @@ import Login from '@/views/Login'
 import Register from '@/views/Register'
 import Search from '@/views/Search'
 import Detail from '@/views/Detail'
+import AddCartSuccess from '@/views/AddCartSuccess'
+import ShopCart from '@/views/ShopCart'
 const router = new VueRouter({
     routes: [
         {
@@ -52,6 +54,22 @@ const router = new VueRouter({
             path: '/detail/:id',
             name: "detail",
             component: Detail,
+            meta: {
+                isShowFooterList: true
+            },
+        },
+        {
+            path: '/addcartsuccess/:num',
+            name: 'addcartsuccess',
+            component: AddCartSuccess,
+            meta: {
+                isShowFooterList: true
+            },
+            props: true
+        },
+        {
+            path: '/shopcart',
+            component: ShopCart,
             meta: {
                 isShowFooterList: true
             },

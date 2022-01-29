@@ -1,16 +1,16 @@
 <template>
   <div class="swiper-container">
-    <button style="left: 0" @click="leftmove">《</button>
+    <button style="left: 0" @click="rightmove">《</button>
     <div class="container" ref="container">
       <img
         :class="{ active: index == active }"
         v-for="(skuImage, index) of skuImageList"
         :key="skuImage.id"
         :src="skuImage.imgUrl"
-        @click="setimg(index, skuImage.imgUrl)"
+        @mouseenter="setimg(index, skuImage.imgUrl)"
       />
     </div>
-    <button style="right: 0" @click="rightmove">》</button>
+    <button style="right: 0" @click="leftmove">》</button>
   </div>
 </template>
 

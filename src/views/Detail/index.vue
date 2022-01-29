@@ -82,9 +82,12 @@
                 <dt class="title">{{ spuSaleAttr.saleAttrName }}</dt>
 
                 <dd
-                  v-for="spuSaleAttrValue of spuSaleAttr.spuSaleAttrValueList"
+                  :class="{ active: spuSaleAttrValue.isChecked == 1 }"
+                  v-for="(
+                    spuSaleAttrValue, index
+                  ) of spuSaleAttr.spuSaleAttrValueList"
                   :key="spuSaleAttrValue.id"
-                  changepirce="0"
+                  @click="selectChange(spuSaleAttr.spuSaleAttrValueList, index)"
                 >
                   {{ spuSaleAttrValue.saleAttrValueName }}
                 </dd>
@@ -97,7 +100,7 @@
                 <a href="javascript:" class="mins" @click="subNum">-</a>
               </div>
               <div class="add">
-                <a href="javascript:">加入购物车</a>
+                <a @click="addToCart">加入购物车</a>
               </div>
             </div>
           </div>
@@ -136,7 +139,7 @@
                     <i>6088.00</i>
                   </div>
                   <div class="operate">
-                    <a href="javascript:void(0);">加入购物车</a>
+                    <a>加入购物车</a>
                   </div>
                 </div>
               </li>
@@ -349,9 +352,16 @@ export default {
     return {
       num: 1,
       skuImg: undefined,
+      cartData: JSON.parse(localStorage.getItem("cartData")) || [],
     };
   },
   watch: {
+    cartData: {
+      deep: true,
+      handler() {
+        localStorage.setItem("cartData", JSON.stringify(this.cartData));
+      },
+    },
     num(val) {
       if (typeof val != "number") this.num = 1;
       if (val <= 0) this.num = 1;
@@ -367,6 +377,41 @@ export default {
     },
     setskuImg(url) {
       this.skuImg = url;
+    },
+    selectChange(spuSaleAttr, index) {
+      for (const key in spuSaleAttr) {
+        if (key == index) this.$set(spuSaleAttr[key], "isChecked", 1);
+        else this.$set(spuSaleAttr[key], "isChecked", 0);
+      }
+    },
+    async addToCart() {
+      const addCartData = {
+        skuId: this.$route.params.id || undefined,
+        skuNum: this.num || undefined,
+        checked: true,
+      };
+      let result = await this.$store.dispatch("details/addToCart", addCartData);
+      if (result.code == 200) {
+        //购物车信息 追加并保存
+        let cartNewData = [...this.cartData];
+        cartNewData = cartNewData.filter((e) => {
+          if (e.skuId == addCartData.skuId) {
+            addCartData.skuNum += e.skuNum;
+            return false;
+          }
+          return true;
+        });
+        cartNewData.unshift(addCartData);
+        await (this.cartData = cartNewData);
+        this.$router.push({
+          name: "addcartsuccess",
+          params: {
+            num: this.num,
+          },
+        });
+      } else {
+        alert("加入购物车失败");
+      }
     },
   },
   computed: {
@@ -533,6 +578,7 @@ export default {
               }
 
               dd {
+                cursor: pointer;
                 float: left;
                 margin-right: 5px;
                 color: #666;

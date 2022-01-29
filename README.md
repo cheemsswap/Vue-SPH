@@ -1007,3 +1007,154 @@ Vue.component(CarouselItem.name, CarouselItem);
                 ---ImageList.vue
     详情查看源文件    
 </pre>
+
+# 第四十九步 Details详情页 商品售卖属性值选择
+<pre>
+    ---view
+        ---Detail
+            ---index.vue
+    核心代码:
+    ```html
+    <dl v-for="spuSaleAttr of spuSaleAttrList" :key="spuSaleAttr.id">
+        <dt class="title">{{ spuSaleAttr.saleAttrName }}</dt>
+        <dd
+            :class="{ active: spuSaleAttrValue.isChecked == 1 }"
+            v-for="(
+            spuSaleAttrValue, index
+            ) of spuSaleAttr.spuSaleAttrValueList"
+            :key="spuSaleAttrValue.id"
+            @click="selectChange(spuSaleAttr.spuSaleAttrValueList, index)"
+        >
+            {{ spuSaleAttrValue.saleAttrValueName }}
+        </dd>
+    </dl>
+    ```
+    methods: {
+        selectChange(spuSaleAttr, index) {
+            for (const key in spuSaleAttr) {
+                if (key == index) this.$set(spuSaleAttr[key], "isChecked", 1);
+                else this.$set(spuSaleAttr[key], "isChecked", 0);
+            }
+        },
+    },
+</pre>
+
+# 第五十步 添加商品加入购物车接口,并为详情页的按钮“加入购物车”的逻辑，并保存到浏览器缓存中
+<pre>
+    ---api
+        ---index.js
+    核心代码:
+    export const reqaddToCart = (skuId, skuNum) => {
+        return requests({
+            url: `/cart/addToCart/${skuId}/${skuNum}`,
+            method: 'post',
+        })
+    }
+    ---view
+        ---Detail
+            ---index.js
+        ```html
+        <a @click="addToCart">加入购物车</a>
+        ```
+        data() {
+            return {
+                cartData: JSON.parse(localStorage.getItem("cartData")) || [],
+            };
+        },
+        watch: {
+            cartData: {
+                deep: true,
+                handler() {
+                    localStorage.setItem("cartData", JSON.stringify(this.cartData));
+                },
+            },
+        }
+        methods: {
+            async addToCart() {
+                const addCartData = {
+                    skuId: this.$route.params.id || undefined,
+                    skuNum: this.num || undefined,
+                };
+                let result = await this.$store.dispatch("details/addToCart", addCartData);
+                if (result.code == 200) {
+                    //购物车信息 追加并保存
+                    let cartNewData = [...this.cartData];
+                    cartNewData = cartNewData.filter((e) => {
+                    if (e.skuId == addCartData.skuId) {
+                        addCartData.skuNum += e.skuNum;
+                        return false;
+                    }
+                    return true;
+                    });
+                    cartNewData.unshift(addCartData);
+                    await (this.cartData = cartNewData);
+                    this.$router.push({
+                    name: "addcartsuccess",
+                    params: {
+                        num: this.num,
+                    },
+                    });
+                } else {
+                    alert("加入购物车失败");
+                }
+            },
+        }
+</pre>
+
+# 第五十一步 新增购物车添加成功 静态页面 和 路由配置
+<pre>
+    路由配置：
+    ---router
+        ---index.js
+        核心代码:
+        {
+            path: '/addcartsuccess/:num',
+            name: 'addcartsuccess',
+            component: AddCartSuccess,
+            meta: {
+            isShowFooterList: true
+            },
+            props: true
+        },
+    购物车添加成功静态页面
+    （包括展示，跳转回详情页）
+    ---view
+        ---AddCartSuccess
+            ---index.js
+    核心代码具体查看文件
+</pre>
+
+# 第五十二步 新增购物车展示静态页面 和 路由配置
+<pre>
+    ---router
+        ---index.js
+        核心代码:
+        {
+            path: '/shopcart',
+            component: ShopCart,
+            meta: {
+                isShowFooterList: true
+            },
+        },  
+    ---view
+        ---ShopCart
+            ---index.js
+        核心代码具体查看文件  
+</pre>
+
+# 第五十三步 新增游客token
+<pre>
+    ---src
+        ---utils
+            ---uuid_token.js
+    核心代码:
+    import { v4 as uuidv4 } from 'uuid';
+    export const GETUUID = function () {
+        let uuid = localStorage.getItem("uuid");
+        if (uuid == undefined) {
+            uuid = uuidv4();
+            localStorage.setItem("uuid", uuid)
+        }
+        return uuid;
+    }   
+</pre>

@@ -52,3 +52,19 @@ export const reqgetDetailsInfo = (skuId) => {
         method: 'get',
     })
 }
+
+export const reqaddToCart = ({ skuId, skuNum }) => {
+    return requests({
+        url: `/cart/addToCart/${skuId}/${skuNum}`,
+        method: 'post',
+    })
+}
+
+// 5.获取购物车列表
+export const reqgetCartList = () => {
+    return requests({
+        url: `/cart/cartList`,
+        method: 'get',
+    })
+}
+

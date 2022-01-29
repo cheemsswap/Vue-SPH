@@ -1,7 +1,8 @@
-import { reqgetDetailsInfo } from '@/api'
-
+import { reqgetDetailsInfo, reqaddToCart } from '@/api'
+import { GETUUID } from '@/utils/uuid_token'
 const state = {
-    DetailsInfo: {}
+    DetailsInfo: {},
+    uuid: GETUUID()
 }
 const mutations = {
     SETDETAILSINFO(states, data) {
@@ -15,6 +16,10 @@ const actions = {
             commit("SETDETAILSINFO", result.data)
         }
     },
+    async addToCart({ commit }, { skuId, skuNum }) {
+        const result = await reqaddToCart({ skuId, skuNum });
+        return result
+    }
 }
 const getters = {
     categoryView(states) {
