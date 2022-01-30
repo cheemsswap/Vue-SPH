@@ -68,3 +68,12 @@ export const reqgetCartList = () => {
     })
 }
 
+
+//7.切换商品选中状态
+export const reqsetCheckCart = ({ skuID, isChecked }) => {
+    return requests({
+        url: `/cart/checkCart/${skuID}/${isChecked ? 1 : 0}`,
+        method: 'get',
+    })
+}
+

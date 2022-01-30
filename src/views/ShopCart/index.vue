@@ -12,36 +12,44 @@
       </div>
       <div class="cart-body">
         <!-- 一个商品 -->
-        <ul class="cart-list">
+        <ul
+          class="cart-list"
+          v-for="cartInfo of cartInfoList || []"
+          :key="cartInfo.id"
+        >
           <li class="cart-list-con1">
-            <input type="checkbox" name="chk_list" />
+            <input
+              type="checkbox"
+              name="chk_list"
+              :checked="cartInfo.isChecked"
+              @click="changeChecked(cartInfo.skuId)"
+            />
           </li>
           <li class="cart-list-con2">
-            <img src="./images/goods1.png" />
+            <img :src="cartInfo.imgUrl" />
             <div class="item-msg">
-              米家（MIJIA） 小米小白智能摄像机增强版
-              1080p高清360度全景拍摄AI增强
+              {{ cartInfo.skuName }}
             </div>
           </li>
           <li class="cart-list-con3">
             <div class="item-txt">&nbsp;</div>
           </li>
           <li class="cart-list-con4">
-            <span class="price">399.00</span>
+            <span class="price">{{ cartInfo.skuPrice }}</span>
           </li>
           <li class="cart-list-con5">
             <a href="javascript:void(0)" class="mins">-</a>
             <input
               autocomplete="off"
               type="text"
-              value="1"
+              :value="cartInfo.skuNum"
               minnum="1"
               class="itxt"
             />
             <a href="javascript:void(0)" class="plus">+</a>
           </li>
           <li class="cart-list-con6">
-            <span class="sum">399</span>
+            <span class="sum">{{ cartInfo.skuNum * cartInfo.skuPrice }}</span>
           </li>
           <li class="cart-list-con7">
             <a href="#none" class="sindelet">删除</a>
@@ -53,7 +61,7 @@
     </div>
     <div class="cart-tool">
       <div class="select-all">
-        <input class="chooseAll" type="checkbox" />
+        <input class="chooseAll" type="checkbox" v-model="isAllchecked" />
         <span>全选</span>
       </div>
       <div class="option">
@@ -62,10 +70,13 @@
         <a href="#none">清除下柜商品</a>
       </div>
       <div class="money-box">
-        <div class="chosed">已选择 <span>0</span>件商品</div>
+        <div class="chosed">
+          已选择 <span>{{ totalSum }}</span
+          >件商品
+        </div>
         <div class="sumprice">
           <em>总价（不含运费） ：</em>
-          <i class="summoney">0</i>
+          <i class="summoney">{{ totalPrice }}</i>
         </div>
         <div class="sumbtn">
           <a class="sum-btn" href="###" target="_blank">结算</a>
@@ -84,6 +95,63 @@ export default {
   },
   computed: {
     ...mapState("cart", ["CartList"]),
+    cartInfoList() {
+      if (this.CartList[0]) return this.CartList[0]["cartInfoList"];
+      return [];
+    },
+    totalPrice() {
+      let price = 0;
+      if (this.CartList[0]) {
+        this.CartList[0]["cartInfoList"].forEach((element) => {
+          if (element.isChecked) price += element.skuNum * element.skuPrice;
+        });
+      }
+      return price;
+    },
+    totalSum() {
+      let sum = 0;
+      if (this.CartList[0]) {
+        this.CartList[0]["cartInfoList"].forEach((element) => {
+          if (element.isChecked) sum++;
+        });
+      }
+      return sum;
+    },
+    isAllchecked: {
+      async set(val) {
+        if (this.CartList[0]) {
+          for (const key in this.CartList[0]["cartInfoList"]) {
+            await this.$store.dispatch("cart/setCheckCart", {
+              skuID: this.CartList[0]["cartInfoList"][key].skuId,
+              isChecked: val,
+            });
+          }
+          this.$store.dispatch("cart/getCartList");
+        }
+      },
+      get() {
+        if (
+          this.CartList[0] &&
+          this.CartList[0]["cartInfoList"].length == this.totalSum
+        ) {
+          return true;
+        }
+        return false;
+      },
+    },
+  },
+  methods: {
+    async changeChecked(id) {
+      //发送请求更新商品是否选中的数据
+      let reselt = await this.$store.dispatch("cart/setCheckCart", {
+        skuID: id,
+        isChecked: event.target.checked,
+      });
+      if (!reselt) {
+        alert("操作失败");
+      }
+      this.$store.dispatch("cart/getCartList");
+    },
   },
   mounted() {
     this.$store.dispatch("cart/getCartList");

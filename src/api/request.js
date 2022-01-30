@@ -5,6 +5,8 @@ import axios from "axios";
 import NProgress from 'nprogress'
 import "nprogress/nprogress.css"
 
+import { GETUUID } from '@/utils/uuid_token'
+
 //1利用axios对象的方法create 去创建和一个axios实例
 const requests = axios.create({
     baseURL: '/api',
@@ -14,6 +16,7 @@ const requests = axios.create({
 //请求拦截器 里面有header请求等信息
 requests.interceptors.request.use((config) => {
     NProgress.start();
+    config.headers.userTempId = GETUUID()
     return config
 })
 

@@ -1,4 +1,4 @@
-import { reqgetCartList } from '@/api'
+import { reqgetCartList, reqsetCheckCart } from '@/api'
 
 const state = {
     CartList: {}
@@ -14,6 +14,13 @@ const actions = {
         if (result.code == 200) {
             commit("SETCARTLIST", result.data)
         }
+    },
+    async setCheckCart({ commit }, { skuID, isChecked }) {
+        const result = await reqsetCheckCart({ skuID, isChecked });
+        if (result.code == 200) {
+            return true
+        }
+        return false
     },
 }
 const getters = {

@@ -1158,3 +1158,201 @@ Vue.component(CarouselItem.name, CarouselItem);
         return uuid;
     }   
 </pre>
+
+# 第五十四步 在请求头添加游客uuid
+<pre>
+    请求头加入uuid后，所以的加入购物车都会被记录下来，
+    昨日的获取购物车的接口也能返回正常的购物车数据
+    ---api
+        ---request.js
+    requests.interceptors.request.use((config) => {
+        NProgress.start();
+        //添加游客uuid
+        config.headers.userTempId = GETUUID()
+        return config
+    })
+</pre>
+
+# 第五十五步 展示购物车数据
+<pre>
+    ---view
+        ---ShopCart
+            ---index.vue
+    ```html
+    <ul
+        class="cart-list"
+        v-for="cartInfo of cartInfoList || []"
+        :key="cartInfo.id"
+    >
+        <li class="cart-list-con1">
+            <input
+                type="checkbox"
+                name="chk_list"
+                :checked="cartInfo.isChecked"
+            />
+        </li>
+        <li class="cart-list-con2">
+            <img :src="cartInfo.imgUrl" />
+            <div class="item-msg">
+                {{ cartInfo.skuName }}
+            </div>
+        </li>
+        <li class="cart-list-con3">
+            <div class="item-txt">&nbsp;</div>
+        </li>
+        <li class="cart-list-con4">
+            <span class="price">{{ cartInfo.skuPrice }}</span>
+        </li>
+        <li class="cart-list-con5">
+            <a href="javascript:void(0)" class="mins">-</a>
+            <input
+                autocomplete="off"
+                type="text"
+                :value="cartInfo.skuNum"
+                minnum="1"
+                class="itxt"
+            />
+            <a href="javascript:void(0)" class="plus">+</a>
+        </li>
+        <li class="cart-list-con6">
+            <span class="sum">{{ cartInfo.skuNum * cartInfo.skuPrice }}</span>
+        </li>
+        <li class="cart-list-con7">
+            <a href="#none" class="sindelet">删除</a>
+            <br />
+            <a href="#none">移到收藏</a>
+        </li>
+    </ul>
+    ```
+    computed: {
+    ...mapState("cart", ["CartList"]),
+    cartInfoList() {
+    if (this.CartList[0]) return this.CartList[0]["cartInfoList"];
+    return [];
+    },
+</pre>
+
+# 第五十六步 购物车商品选中状态修改-》api接口设置，store仓库，
+<pre>
+    1、api接口
+    ---api
+        ---index.js
+    export const reqsetCheckCart = ({ skuID, isChecked }) => {
+        return requests({
+            url: `/cart/checkCart/${skuID}/${isChecked ? 1 : 0}`,
+            method: 'get',
+        })
+    }
+    2、store仓库
+    ---store
+        ---cart
+            ---index.js
+        const actions = {
+            async setCheckCart({ commit }, { skuID, isChecked }) {
+                const result = await reqsetCheckCart({ skuID, isChecked });
+                if (result.code == 200) {
+                    return true
+                }
+                return false
+            },
+        }
+    3、视图页面
+    ---view
+        ---ShopCart
+            ---index.vue
+    单个商品选中核心代码
+    ```html
+    <li class="cart-list-con1">
+        <input
+        type="checkbox"
+        name="chk_list"
+        :checked="cartInfo.isChecked"
+        @click="changeChecked(cartInfo.skuId)"
+        />
+    </li>
+    ```
+    methods: {
+        async changeChecked(id) {
+            //发送请求更新商品是否选中的数据
+            let reselt = await this.$store.dispatch("cart/setCheckCart", {
+            skuID: id,
+            isChecked: event.target.checked,
+            });
+            if (!reselt) {
+                alert("操作失败");
+            }
+            this.$store.dispatch("cart/getCartList");
+        },
+    },
+    
+    全选按钮 核心代码
+    ```html
+    <div class="select-all">
+        <input class="chooseAll" type="checkbox" v-model="isAllchecked" />
+        <span>全选</span>
+    </div>
+    ```
+    computed: {
+        isAllchecked: {
+            async set(val) {
+                if (this.CartList[0]) {
+                    for (const key in this.CartList[0]["cartInfoList"]) {
+                        await this.$store.dispatch("cart/setCheckCart", {
+                        skuID: this.CartList[0]["cartInfoList"][key].skuId,
+                        isChecked: val,
+                        });
+                    }
+                    this.$store.dispatch("cart/getCartList");
+                }
+            },
+            get() {
+                if (
+                this.CartList[0] &&
+                this.CartList[0]["cartInfoList"].length == this.totalSum
+                ) {
+                    return true;
+                }
+                return false;
+            },
+        },
+    },
+</pre>
+
+# 第五十七步  增加已选择多少商品和已选总价的计算
+<pre>
+    计算一共选择了多少件商品 和 已选商品的总价格
+    ```html
+    <div class="money-box">
+        <div class="chosed">
+            已选择 
+            <span>{{ totalSum }}</span>
+            件商品
+        </div>
+        <div class="sumprice">
+        <em>总价（不含运费） ：</em>
+        <i class="summoney">{{ totalPrice }}</i>
+    </div>
+    ```
+    computed: {
+        //已选商品的总价计算
+        totalPrice() {
+            let price = 0;
+            if (this.CartList[0]) {
+                this.CartList[0]["cartInfoList"].forEach((element) => {
+                    if (element.isChecked) price += element.skuNum * element.skuPrice;
+                });
+            }
+            return price;
+        },
+        //已选商品的数量
+        totalSum() {
+            let sum = 0;
+            if (this.CartList[0]) {
+                this.CartList[0]["cartInfoList"].forEach((element) => {
+                    if (element.isChecked) sum++;
+                });
+            }
+            return sum;
+        },
+    }
+</pre>
