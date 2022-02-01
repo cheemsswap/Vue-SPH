@@ -38,21 +38,42 @@
             <span class="price">{{ cartInfo.skuPrice }}</span>
           </li>
           <li class="cart-list-con5">
-            <a href="javascript:void(0)" class="mins">-</a>
+            <a
+              @click="
+                updateCartNum(
+                  cartInfo.skuId,
+                  cartInfo.skuNum,
+                  cartInfo.skuNum - 1
+                )
+              "
+              class="mins"
+              >-</a
+            >
             <input
               autocomplete="off"
               type="text"
               :value="cartInfo.skuNum"
               minnum="1"
               class="itxt"
+              @change="updateCartNum(cartInfo.skuId, cartInfo.skuNum, null)"
             />
-            <a href="javascript:void(0)" class="plus">+</a>
+            <a
+              @click="
+                updateCartNum(
+                  cartInfo.skuId,
+                  cartInfo.skuNum,
+                  cartInfo.skuNum + 1
+                )
+              "
+              class="plus"
+              >+</a
+            >
           </li>
           <li class="cart-list-con6">
             <span class="sum">{{ cartInfo.skuNum * cartInfo.skuPrice }}</span>
           </li>
           <li class="cart-list-con7">
-            <a href="#none" class="sindelet">删除</a>
+            <a @click="delCart(cartInfo.skuId)" class="sindelet">删除</a>
             <br />
             <a href="#none">移到收藏</a>
           </li>
@@ -65,7 +86,7 @@
         <span>全选</span>
       </div>
       <div class="option">
-        <a href="#none">删除选中的商品</a>
+        <a @click="delSelectCart">删除选中的商品</a>
         <a href="#none">移到我的关注</a>
         <a href="#none">清除下柜商品</a>
       </div>
@@ -151,6 +172,41 @@ export default {
         alert("操作失败");
       }
       this.$store.dispatch("cart/getCartList");
+    },
+    async updateCartNum(id, oldnum, newnum) {
+      if (newnum == null) {
+        newnum = parseInt(event.target.value);
+      }
+      if (newnum <= 0 || parseInt(oldnum) == parseInt(newnum)) {
+        event.target.value = oldnum;
+        return;
+      }
+      const num = newnum - oldnum;
+      await this.$store.dispatch("details/addToCart", {
+        skuId: id,
+        skuNum: num,
+      });
+      this.$store.dispatch("cart/getCartList");
+    },
+    async delCart(id, refresh = true) {
+      await this.$store.dispatch("cart/delCart", id);
+      if (refresh) {
+        this.$store.dispatch("cart/getCartList");
+      }
+    },
+    async delSelectCart() {
+      //删除被选中的所有
+      if (this.CartList[0]) {
+        for (const index in this.CartList[0]["cartInfoList"]) {
+          if (this.CartList[0]["cartInfoList"][index]["isChecked"]) {
+            await this.delCart(
+              this.CartList[0]["cartInfoList"][index]["skuId"],
+              false
+            );
+          }
+        }
+        this.$store.dispatch("cart/getCartList");
+      }
     },
   },
   mounted() {
@@ -297,6 +353,7 @@ export default {
 
           a {
             color: #666;
+            cursor: pointer;
           }
         }
       }

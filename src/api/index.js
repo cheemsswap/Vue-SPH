@@ -77,3 +77,10 @@ export const reqsetCheckCart = ({ skuID, isChecked }) => {
     })
 }
 
+//8.删除购物车商品
+export const reqDelCart = (skuID) => {
+    return requests({
+        url: `/cart/deleteCart/${skuID}`,
+        method: 'delete',
+    })
+}

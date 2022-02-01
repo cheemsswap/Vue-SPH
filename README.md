@@ -1356,3 +1356,127 @@ Vue.component(CarouselItem.name, CarouselItem);
         },
     }
 </pre>
+
+# 第五十八步 增加对购物车商品数量的修改
+<pre>
+    使用添加到购物车的接口
+    /api/cart/addToCart/{skuId}/{skuNum}
+
+    ---view
+        ---ShopCart
+            ---index.vue
+        核心代码:
+        ```html
+        <a
+            @click="
+            updateCartNum(
+            cartInfo.skuId,
+            cartInfo.skuNum,
+            cartInfo.skuNum - 1
+            )
+            "
+            class="mins"
+            >-
+        </a>
+        <input
+            autocomplete="off"
+            type="text"
+            :value="cartInfo.skuNum"
+            minnum="1"
+            class="itxt"
+            @change="updateCartNum(cartInfo.skuId, cartInfo.skuNum, null)"
+        />
+        <a
+            @click="
+            updateCartNum(
+            cartInfo.skuId,
+            cartInfo.skuNum,
+            cartInfo.skuNum + 1
+            )
+            "
+            class="plus"
+        >+
+        </a>
+        ```
+        methods:{
+            async updateCartNum(id, oldnum, newnum) {
+                if (newnum == null) {
+                    newnum = parseInt(event.target.value);
+                }
+                if (newnum <= 0 || parseInt(oldnum) == parseInt(newnum)) {
+                    event.target.value = oldnum;
+                    return;
+                }
+                const num = newnum - oldnum;
+                await this.$store.dispatch("details/addToCart", {
+                    skuId: id,
+                    skuNum: num,
+                });
+                this.$store.dispatch("cart/getCartList");
+            },
+        }
+</pre>
+
+# 第五十九步 增加对购物车商品删除的操作
+<pre>
+    增加接口api
+    ---api
+        ---index.js
+    //8.删除购物车商品
+    export const reqDelCart = (skuID) => {
+        return requests({
+            url: `/cart/deleteCart/${skuID}`,
+            method: 'delete',
+        })
+    }
+    增加vuex仓库的操作
+    ---store
+        ---cart
+            ---index.js
+        async delCart({ commit }, skuID) {
+            const result = await reqDelCart(skuID);
+            if (result.code == 200) {
+                return true
+            }
+            return false
+        },
+    
+    单个商品的删除操作
+    ---view
+        ---ShopCart
+            ---index.vue
+    核心代码:
+    ```html
+    <a @click="delCart(cartInfo.skuId)" class="sindelet">删除</a>
+    ```
+    methods: {
+        async delCart(id, refresh = true) {
+            await this.$store.dispatch("cart/delCart", id);
+            if (refresh) {
+                this.$store.dispatch("cart/getCartList");
+            }
+        }
+    }
+
+    对已选的商品进行批量删除操作
+    ```html
+    <a @click="delSelectCart">删除选中的商品</a>
+    ```
+    methods: {
+        async delSelectCart() {
+            //删除被选中的所有
+            if (this.CartList[0]) {
+                for (const index in this.CartList[0]["cartInfoList"]) {
+                    if (this.CartList[0]["cartInfoList"][index]["isChecked"]) {
+                        await this.delCart(
+                            this.CartList[0]["cartInfoList"][index]["skuId"],
+                            false
+                        );
+                    }
+                }
+                this.$store.dispatch("cart/getCartList");
+            }
+        }
+    }
+</pre>
+
