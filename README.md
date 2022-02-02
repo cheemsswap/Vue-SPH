@@ -1480,3 +1480,236 @@ Vue.component(CarouselItem.name, CarouselItem);
     }
 </pre>
 
+# 第六十步 修改注册和登录的静态组件
+<pre>
+    ---view
+        ---Register
+            ---index.vue
+    
+    ---view
+        ---Login
+            ---index.vue
+</pre>
+
+# 第六十一步 增加注册获取验证码的api接口 和 vuex注册仓库获取验证码
+<pre>
+    ---api
+        ---index.js
+        核心代码
+        export const reqgetRegisterCode = (phone) => {
+            return requests({
+                url: `/user/passport/sendCode/${phone}`,
+                method: 'get',
+            })
+        }
+    ---store
+        ---register
+            ---index.js
+        核心代码
+    const state = {
+        code: ''
+    }
+    const mutations = {
+        SETCODE(states, data) {
+            states.code = data
+        }
+    }
+    const actions = {
+        async getRegisterCode({ commit }, phone) {
+            const result = await reqgetRegisterCode(phone);
+            if (result.code == 200) {
+                commit("SETCODE", result.data)
+            } else {
+                commit("SETCODE", "请重试")
+            }
+        }
+    }
+</pre>
+
+# 第六十二步 为注册组件的获取验证码按钮添加事件
+<pre>
+    ---view
+        ---Register
+            ---index.vue
+        核心代码:
+        ```html
+        <input
+          v-model.number="phone"
+          type="text"
+          placeholder="请输入你的手机号"
+        />
+
+        <input v-model="code" type="text" placeholder="请输入验证码" />
+        <button
+          @click="getRegisterCode"
+          style="width: 100px; height: 38px; margin-left: 5px"
+        >
+          获取验证码
+        </button>
+        ```
+        核心代码:
+        data() {
+            return {
+                phone: "",
+                code:""
+            }
+        }
+        methods:{
+            async getRegisterCode() {
+                if (!(this.phone >= 10000000000 && this.phone <= 99999999999)) {
+                    this.phoneerrormsg = "请输入正确的手机号码";
+                    return;
+                }
+                this.phoneerrormsg = "";
+                await this.$store.dispatch("register/getRegisterCode", this.phone);
+                this.code = this.$store.state.register.code;
+            },
+        }
+</pre>
+
+# 第六十三步 增加注册表单提交api 和 vuex注册仓库表单提交
+<pre>
+    ---api
+        ---index.js
+        核心代码:
+        export const reqgetRegister = (req) => {
+            return requests({
+                url: `/user/passport/register`,
+                method: 'post',
+                data: req
+            })
+        }
+    ---store
+        ---register
+            ---index.js
+        核心代码:
+        const action = {
+            async getRegister({ commit }, req) {
+                const result = await reqgetRegister(req);
+                return result
+            },
+        }
+</pre>
+
+# 第六十四步 为注册组件的注册按钮添加注册事件
+<pre>
+    ---view
+        ---Register
+            ---index.vue
+        核心代码：
+        ```html
+        <button @click="registerSubmit">完成注册</button>
+        ```
+        核心代码:
+        methods:{
+            async registerSubmit() {
+                let flag = true;
+                if (!this.isPhone()) flag = false;
+                if (!this.isCode()) flag = false;
+                if (!this.ispassword1()) flag = false;
+                if (!this.ispassword2()) flag = false;
+                if (!this.isagree()) flag = false;
+                if (flag) {
+                    const req = {
+                        phone: this.phone,
+                        password: this.password1,
+                        code: this.code,
+                    };
+                    let result = await this.$store.dispatch("register/getRegister", req);
+                    if (result.code == 200) {
+                        alert("注册成功！1S后自动跳转登录页面");
+                        setTimeout(() => {
+                            this.$router.push("/login");
+                        }, 1000);
+                    } else {
+                        alert(result.message);
+                    }
+                }
+            },
+        }
+</pre>
+
+# 第六十五步 增加登录表单提交api 和 vuex登录仓库表单提交（并持久化token）
+<pre>
+    ---api
+        ---index.js
+        核心代码:
+        export const reqgetLogin = (req) => {
+            return requests({
+                url: `/user/passport/login`,
+                method: 'post',
+                data: req
+            })
+        }
+    ---store
+        ---login
+            ---index.js
+        核心代码:
+        const state = {
+            token: localStorage.getItem("token") || ""
+        }
+        const mutations = {
+            SETTOKEN(states, data) {
+                states.token = data
+                localStorage.setItem("token", data)
+            }
+        }
+        const actions = {
+            async getLogin({ commit }, req) {
+                const result = await reqgetLogin(req);
+                if (result.code == 200) {
+                    commit("SETTOKEN", result.data.token)
+                    return true;
+                }
+                else
+                    return false
+            },
+        }
+</pre>
+
+# 第六十六步 为登录组件的登录按钮 登录事件
+<pre>
+    ---view
+        ---Login
+            ---index.vue
+        核心代码:
+        ```html
+        <input
+        v-model="phone"
+        type="text"
+        placeholder="邮箱/用户名/手机号"
+        />
+        <input
+        v-model="password"
+        type="text"
+        placeholder="请输入密码"
+        />
+        <button @click.prevent="login" class="btn">
+        登&nbsp;&nbsp;录
+        </button>
+        ```
+        核心代码:
+        data() {
+            return {
+                phone: "",
+                password: "",
+            };
+        },
+        methods: {
+            async login() {
+                const req = {
+                    phone: this.phone,
+                    password: this.password,
+                };
+                let result = await this.$store.dispatch("login/getLogin", req);
+                if (result) {
+                    alert("登录成功！1s后返回主页");
+                    setTimeout(() => {
+                        this.$router.push("/home");
+                    }, 1000);
+                } else {
+                    alert("登录失败");
+                }
+            },
+        }
+</pre>

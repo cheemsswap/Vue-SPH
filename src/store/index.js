@@ -6,11 +6,15 @@ import home from './home'
 import search from './search'
 import details from './details'
 import cart from './cart'
+import register from './register'
+import login from './login'
 export default new Vuex.Store({
     modules: {
         home,
         search,
         details,
-        cart
+        cart,
+        register,
+        login
     }
 })

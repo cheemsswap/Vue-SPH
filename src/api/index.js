@@ -84,3 +84,31 @@ export const reqDelCart = (skuID) => {
         method: 'delete',
     })
 }
+
+//注册验证码
+export const reqgetRegisterCode = (phone) => {
+    return requests({
+        url: `/user/passport/sendCode/${phone}`,
+        method: 'get',
+    })
+}
+
+// 注册表单提交
+///api/user/passport/register
+export const reqgetRegister = (req) => {
+    return requests({
+        url: `/user/passport/register`,
+        method: 'post',
+        data: req
+    })
+}
+
+//用户登录
+// 9.登录/api/user/passport/login
+export const reqgetLogin = (req) => {
+    return requests({
+        url: `/user/passport/login`,
+        method: 'post',
+        data: req
+    })
+}
