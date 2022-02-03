@@ -93,10 +93,12 @@ export default {
       };
       let result = await this.$store.dispatch("login/getLogin", req);
       if (result) {
-        alert("登录成功！1s后返回主页");
-        setTimeout(() => {
+        try {
+          await this.$store.dispatch("login/getUserInfo");
           this.$router.push("/home");
-        }, 1000);
+        } catch (error) {
+          console.log("自动登录失败");
+        }
       } else {
         alert("登录失败");
       }

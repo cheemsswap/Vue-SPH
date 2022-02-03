@@ -1713,3 +1713,166 @@ Vue.component(CarouselItem.name, CarouselItem);
             },
         }
 </pre>
+
+# 第六十七步 增加自动登录验证api,增加发送请求的用户头 和 vuex自动登录验证保持用户信息
+<pre>
+    ---api
+        ---index.js
+        核心代码:
+        export const reqgetUserInfo = () => {
+            return requests({
+                url: `/user/passport/auth/getUserInfo`,
+                method: 'get',
+            })
+        }
+    ---api
+        --request.js
+        核心代码:
+        //请求拦截器 里面有header请求等信息
+        requests.interceptors.request.use((config) => {
+            NProgress.start();
+            config.headers.userTempId = GETUUID()
+            //新增代码:
+            config.headers.token = GETTOKEN()
+            return config
+        })
+    ---utils
+        ---token.js
+        核心代码:为上面的请求头获取token提供获取函数
+        export const GETTOKEN = function () {
+            let token = localStorage.getItem("token");
+            return token;
+        }
+    ---store
+        ---login
+            ---index.js
+        核心代码:
+        const state = {
+            UserInfo: {}
+        }
+        const mutations = {
+            SETUSERINFO(states, data) {
+                states.UserInfo = data
+            }
+        }
+        const actions = {
+            async getUserInfo({ commit }) {
+                const result = await reqgetUserInfo();
+                if (result.code == 200) {
+                    commit("SETUSERINFO", result.data)
+                    return 'ok';
+                }
+                else {
+                    return Promise.reject(new Error('faile'))
+                }
+            }
+        }
+</pre>
+
+# 第六十八步 Header、Login 使用自动登录 并且Header判断是否登录->顶部显示内容不同
+<pre>
+    ---components
+        ---Header
+            ---index.vue
+        核心代码:
+        ```html
+        <p v-if="!UserInfo.id">
+            <span>请</span>
+            <router-link to="/login">登录</router-link>
+            <router-link to="/register" class="register">免费注册</router-link>
+        </p>
+        <p v-if="UserInfo.id">
+            <span>欢迎{{ UserInfo.name }}</span>
+            <a> 退出登录</a>
+        </p>
+        ```
+        computed: {
+            ...mapState("login", ["UserInfo"]),
+        },
+        async mounted() {
+            this.$bus.$on("clearSearchKeyWord", this.clearSearchKeyWord);
+            try {
+                await this.$store.dispatch("login/getUserInfo");
+            } catch (error) {
+                console.log("自动登录失败");
+            }
+        },
+    ---view
+        ---Login
+            ---index.vue
+        methods: {
+            async login() {
+                const req = {
+                    phone: this.phone,
+                    password: this.password,
+                };
+                let result = await this.$store.dispatch("login/getLogin", req);
+                if (result) {
+                    //新增代码 不在是立即跳转到home 而是先实现自动登录然后跳转到 /home
+                    try {
+                        await this.$store.dispatch("login/getUserInfo");
+                        this.$router.push("/home");
+                    } catch (error) {
+                        console.log("自动登录失败");
+                    }
+                } else {
+                    alert("登录失败");
+                }
+            }
+        }
+</pre>
+
+# 第六十九步 增加退出登录api 和 vuex退出登录接口
+<pre>
+    ---api
+        ---index.js
+        核心代码:
+        //退出登录
+        export const reqLogout = () => {
+            return requests({
+                url: `/user/passport/logout`,
+                method: 'get',
+            })
+        }
+    ---store
+        ---login
+            ---index.js
+        const actions = {
+            async Logout({ commit }) {
+                const result = await reqLogout();
+                if (result.code == 200) {
+                    commit("SETUSERINFO", {})
+                    commit("SETTOKEN", "")
+                    return 'ok';
+                }
+                else {
+                    return Promise.reject(new Error('faile'))
+                }
+            }
+        }
+</pre>
+
+# 第七十步 为Header增加退出登录 重置token，重置UserInfo
+<pre>
+    ---components
+        ---Header
+            ---index.vue
+        核心代码:
+        ```html
+        <a @click="Logout" style="cursor: pointer"> 退出登录</a>
+        ```
+        核心代码:
+        const actions = {
+            async Logout({ commit }) {
+                const result = await reqLogout();
+                if (result.code == 200) {
+                    commit("SETUSERINFO", {})
+                    commit("SETTOKEN", "")
+                    return 'ok';
+                }
+                else {
+                    return Promise.reject(new Error('faile'))
+                }
+            }
+        }
+</pre>

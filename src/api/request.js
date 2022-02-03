@@ -6,6 +6,7 @@ import NProgress from 'nprogress'
 import "nprogress/nprogress.css"
 
 import { GETUUID } from '@/utils/uuid_token'
+import { GETTOKEN } from '@/utils/token'
 
 //1利用axios对象的方法create 去创建和一个axios实例
 const requests = axios.create({
@@ -17,6 +18,7 @@ const requests = axios.create({
 requests.interceptors.request.use((config) => {
     NProgress.start();
     config.headers.userTempId = GETUUID()
+    config.headers.token = GETTOKEN()
     return config
 })
 

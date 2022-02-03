@@ -112,3 +112,19 @@ export const reqgetLogin = (req) => {
         data: req
     })
 }
+
+//自动登录 获取信息
+export const reqgetUserInfo = () => {
+    return requests({
+        url: `/user/passport/auth/getUserInfo`,
+        method: 'get',
+    })
+}
+
+//退出登录
+export const reqLogout = () => {
+    return requests({
+        url: `/user/passport/logout`,
+        method: 'get',
+    })
+}

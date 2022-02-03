@@ -6,10 +6,14 @@
       <div class="container">
         <div class="loginList">
           <p>尚品汇欢迎您！</p>
-          <p>
+          <p v-if="!UserInfo.id">
             <span>请</span>
             <router-link to="/login">登录</router-link>
             <router-link to="/register" class="register">免费注册</router-link>
+          </p>
+          <p v-if="UserInfo.id">
+            <span>欢迎{{ UserInfo.name }}</span>
+            <a @click="Logout" style="cursor: pointer"> 退出登录</a>
           </p>
         </div>
         <div class="typeList">
@@ -54,12 +58,16 @@
 </template>
 
 <script>
+import { mapState } from "vuex";
 export default {
   name: "Header",
   data() {
     return {
       serachKeyWord: "",
     };
+  },
+  computed: {
+    ...mapState("login", ["UserInfo"]),
   },
   methods: {
     //搜索按钮回调
@@ -76,9 +84,21 @@ export default {
     clearSearchKeyWord() {
       this.serachKeyWord = "";
     },
+    async Logout() {
+      try {
+        let result = await this.$store.dispatch("login/Logout");
+      } catch (error) {
+        console.log("退出登录失败");
+      }
+    },
   },
-  mounted() {
+  async mounted() {
     this.$bus.$on("clearSearchKeyWord", this.clearSearchKeyWord);
+    try {
+      await this.$store.dispatch("login/getUserInfo");
+    } catch (error) {
+      console.log("自动登录失败");
+    }
   },
 };
 </script>

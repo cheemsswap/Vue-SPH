@@ -166,10 +166,8 @@ export default {
         };
         let result = await this.$store.dispatch("register/getRegister", req);
         if (result.code == 200) {
-          alert("注册成功！3S后自动跳转登录页面");
-          setTimeout(() => {
-            this.$router.push("/login");
-          }, 3000);
+          alert("注册成功！");
+          this.$router.push("/login");
         } else {
           alert(result.message);
         }

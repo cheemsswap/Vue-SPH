@@ -31,7 +31,7 @@ export default {
   computed: {
     ...mapState("home", ["FloorList"]),
   },
-  mounted() {
+  async mounted() {
     this.$store.dispatch("home/getFloorList");
   },
 };
