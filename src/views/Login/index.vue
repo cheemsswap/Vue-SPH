@@ -93,12 +93,7 @@ export default {
       };
       let result = await this.$store.dispatch("login/getLogin", req);
       if (result) {
-        try {
-          await this.$store.dispatch("login/getUserInfo");
-          this.$router.push("/home");
-        } catch (error) {
-          console.log("自动登录失败");
-        }
+        this.$router.push("/home");
       } else {
         alert("登录失败");
       }

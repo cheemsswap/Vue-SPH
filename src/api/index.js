@@ -128,3 +128,11 @@ export const reqLogout = () => {
         method: 'get',
     })
 }
+
+//获取用户地址信息
+export const reqgetUserAddress = () => {
+    return requests({
+        url: `/user/userAddress/auth/findUserAddressList`,
+        method: 'get'
+    })
+}

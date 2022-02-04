@@ -16,6 +16,7 @@ import Search from '@/views/Search'
 import Detail from '@/views/Detail'
 import AddCartSuccess from '@/views/AddCartSuccess'
 import ShopCart from '@/views/ShopCart'
+import Trade from '@/views/Trade'
 const router = new VueRouter({
     routes: [
         {
@@ -33,14 +34,16 @@ const router = new VueRouter({
             path: '/login',
             component: Login,
             meta: {
-                isShowFooterList: false
+                isShowFooterList: false,
+                isLogin: false
             }
         },
         {
             path: '/register',
             component: Register,
             meta: {
-                isShowFooterList: false
+                isShowFooterList: false,
+                isLogin: false
             }
         },
         {
@@ -63,7 +66,8 @@ const router = new VueRouter({
             name: 'addcartsuccess',
             component: AddCartSuccess,
             meta: {
-                isShowFooterList: true
+                isShowFooterList: true,
+                isLogin: true
             },
             props: true
         },
@@ -71,7 +75,16 @@ const router = new VueRouter({
             path: '/shopcart',
             component: ShopCart,
             meta: {
-                isShowFooterList: true
+                isShowFooterList: true,
+                isLogin: true
+            },
+        },
+        {
+            path: '/trade',
+            component: Trade,
+            meta: {
+                isShowFooterList: true,
+                isLogin: true
             },
         },
     ],
@@ -84,4 +97,29 @@ const router = new VueRouter({
         }
     }
 })
+import store from '@/store'
+router.beforeEach(async (to, from, next) => {
+    try {
+        await store.dispatch("login/getUserInfo");
+    } catch (error) {
+        console.log("自动登录失败");
+    }
+    if (to.meta.isLogin == undefined) {
+        next();
+        return
+    }
+    if (to.meta.isLogin == true && store.state.login.UserInfo.name != undefined) {
+        next();
+        return
+    }
+    if (to.meta.isLogin == false && store.state.login.UserInfo.name == undefined) {
+        next();
+        return
+    }
+    if (to.meta.isLogin)
+        next('/login')
+    else
+        next('/home')
+})
+
 export default router

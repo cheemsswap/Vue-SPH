@@ -94,11 +94,6 @@ export default {
   },
   async mounted() {
     this.$bus.$on("clearSearchKeyWord", this.clearSearchKeyWord);
-    try {
-      await this.$store.dispatch("login/getUserInfo");
-    } catch (error) {
-      console.log("自动登录失败");
-    }
   },
 };
 </script>

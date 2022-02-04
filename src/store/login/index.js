@@ -1,7 +1,8 @@
-import { reqgetLogin, reqgetUserInfo, reqLogout } from "@/api";
+import { reqgetLogin, reqgetUserInfo, reqLogout, reqgetUserAddress } from "@/api";
 const state = {
     token: localStorage.getItem("token") || "",
-    UserInfo: {}
+    UserInfo: {},
+    UserAddress: []
 }
 const mutations = {
     SETTOKEN(states, data) {
@@ -16,6 +17,9 @@ const mutations = {
     },
     SETUSERINFO(states, data) {
         states.UserInfo = data
+    },
+    SETUSERADDRESS(states, data) {
+        states.UserAddress = data
     }
 }
 const actions = {
@@ -43,10 +47,19 @@ const actions = {
         if (result.code == 200) {
             commit("SETUSERINFO", {})
             commit("SETTOKEN", "")
+            commit("SETUSERADDRESS", [])
             return 'ok';
         }
         else {
             return Promise.reject(new Error('faile'))
+        }
+    },
+    async getUserAddress({ commit }) {
+        const result = await reqgetUserAddress();
+        if (result.code == 200) {
+            commit("SETUSERADDRESS", result.data)
+        } else {
+            return Promise.reject(new Error("faile"))
         }
     }
 }

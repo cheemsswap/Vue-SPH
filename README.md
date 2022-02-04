@@ -1876,3 +1876,183 @@ Vue.component(CarouselItem.name, CarouselItem);
             }
         }
 </pre>
+
+# 第七十一步 移除六十八步的Header、Login 使用自动登录,在路由前置守卫进行自动登录验证
+<pre>
+    ---router
+        ---index.js
+        核心代码:
+        import store from '@/store'
+        router.beforeEach(async (to, from, next) => {
+            try {
+                await store.dispatch("login/getUserInfo");
+            } catch (error) {
+                console.log("自动登录失败");
+            }
+            //meta.isLogin 没有参数 则这个页面不需要登录 或者 登录都可以访问
+            if (to.meta.isLogin == undefined) {
+                next();
+                return
+            }
+            //meta.isLogin 为true 表示此页面必须要登录
+            if (to.meta.isLogin == true && store.state.login.UserInfo.name != undefined){
+                next();
+                return
+            }
+            //meta.isLogin 为false 表示此页面必须要为不登录才能访问
+            if (to.meta.isLogin == false && store.state.login.UserInfo.name ==undefined){
+                next();
+                return
+            }
+            //meta.isLogin 为true 表示此页面必须要登录，但是用户没有登录 跳转登录页面
+            if (to.meta.isLogin)
+                next('/login')
+            else
+                next('/home')
+        })
+</pre>
+# 第七十二步 新增订单提交页面Trade 并 设置 /trade 路由
+<pre>
+    ---view
+        ---Trade
+            ---index.vue
+        详情看文件
+    ---router
+        index.js
+        核心代码:
+        {
+            path: '/trade',
+            component: Trade,
+            meta: {
+                isShowFooterList: true,
+                isLogin: true
+            },
+        },    
+</pre>
+
+# 第七十三步 为购物车提交订单按钮 设置跳转
+<pre>
+    ---view
+        ---ShopCart
+            ---index.vue
+        核心代码:
+        ```html
+        <router-link class="sum-btn" to="/trade">结算</router-link>
+        ```
+</pre>
+
+# 第七十四步 添加 获取用户地址信息api  和 vuex 获取用户地址接口
+<pre>
+    ---api
+        ---index.js
+        核心代码:
+        export const reqgetUserAddress = () => {
+            return requests({
+                url: `/user/userAddress/auth/findUserAddressList`,
+                method: 'get'
+            })
+        }
+    ---store
+        ---login
+            ---index.js
+        核心代码:
+        const state = {
+            UserAddress: []
+        }
+        const mutations = {
+            SETUSERADDRESS(states, data) {
+                states.UserAddress = data
+            }
+        }
+        const actions = {
+            async getUserAddress({ commit }) {
+                const result = await reqgetUserAddress();
+                if (result.code == 200) {
+                    commit("SETUSERADDRESS", result.data)
+                } else {
+                    return Promise.reject(new Error("faile"))
+                }
+            }
+        }
+</pre>
+# 第七十五步 订单提交页面Trade组件 使用地址接口 ,并且增加 点击切换地址，底部信息修改
+<pre>
+    ---view
+        ---index.vue
+        核心代码
+        ```html
+        <div
+        @click="setDefaultAddress(user.id)"
+        class="address clearFix"
+        v-for="user of isAddress"
+        :key="user.id"
+        >
+            <span
+            class="username"
+            :class="{ selected: user.isDefault == 1 ? true : false }"
+            >{{ user.consignee }}</span
+            >
+            <p>
+                <span class="s1">{{ user.fullAddress }}</span>
+                <span class="s2">{{ user.phoneNum }}</span>
+                <span class="s3">默认地址</span>
+            </p>
+        </div>
+
+        <div class="trade">
+            <div class="price">应付金额:　<span>¥5399.00</span></div>
+            <div class="receiveInfo">
+            寄送至:
+            <span>{{ fullAddress }}</span>
+            收货人：<span>{{ consignee }}</span>
+            <span>{{ phoneNum }}</span>
+            </div>
+        </div>
+        ```
+        核心代码:
+        data() {
+            return {
+                isAddress: {},
+                consignee: "",
+                fullAddress: "",
+                phoneNum: "",
+            };
+        },
+        computed: {
+            ...mapState("login", ["UserAddress"]),
+        },
+        watch: {
+            UserAddress() {
+                this.isAddress = this.UserAddress;
+            },
+            isAddress: {
+                deep: true,
+                handler() {
+                    for (const index in this.isAddress) {
+                        if (this.isAddress[index].isDefault == 1) {
+                            this.consignee = this.isAddress[index].consignee;
+                            this.fullAddress = this.isAddress[index].fullAddress;
+                            this.phoneNum = this.isAddress[index].phoneNum;
+                        }
+                    }
+                },
+            },
+        },
+        methods: {
+            setDefaultAddress(id) {
+                for (const index in this.isAddress) {
+                    if (this.isAddress[index].id == id) 
+                        this.isAddress[index].isDefault = 1;
+                    else 
+                        this.isAddress[index].isDefault = 0;
+                }
+            },
+        },
+        async mounted() {
+            try {
+                await this.$store.dispatch("login/getUserAddress");
+            } catch (error) {
+                console.log("获取地址失败");
+            }
+        }
+</pre>
