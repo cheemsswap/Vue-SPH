@@ -38,44 +38,32 @@
       </div>
       <div class="detail">
         <h5>商品清单</h5>
-        <ul class="list clearFix">
+        <ul
+          class="list clearFix"
+          v-for="detail of detailArrayList"
+          :key="detail.skuId"
+        >
           <li>
-            <img src="./images/goods.png" alt="" />
+            <img
+              style="width: 100px; height: 100px"
+              :src="detail.imgUrl"
+              alt=""
+            />
           </li>
           <li>
-            <p>
-              Apple iPhone 6s (A1700) 64G 玫瑰金色
-              移动联通电信4G手机硅胶透明防摔软壳 本色系列
-            </p>
-            <h4>7天无理由退货</h4>
+            <p>{{ detail.skuName }}</p>
           </li>
           <li>
-            <h3>￥5399.00</h3>
+            <h3>￥{{ detail.orderPrice }}</h3>
           </li>
-          <li>X1</li>
-          <li>有货</li>
-        </ul>
-        <ul class="list clearFix">
-          <li>
-            <img src="./images/goods.png" alt="" />
-          </li>
-          <li>
-            <p>
-              Apple iPhone 6s (A1700) 64G 玫瑰金色
-              移动联通电信4G手机硅胶透明防摔软壳 本色系列
-            </p>
-            <h4>7天无理由退货</h4>
-          </li>
-          <li>
-            <h3>￥5399.00</h3>
-          </li>
-          <li>X1</li>
+          <li>X{{ detail.skuNum }}</li>
           <li>有货</li>
         </ul>
       </div>
       <div class="bbs">
         <h5>买家留言：</h5>
         <textarea
+          v-model="orderComment"
           placeholder="建议留言前先与商家沟通确认"
           class="remarks-cont"
         ></textarea>
@@ -90,8 +78,11 @@
     <div class="money clearFix">
       <ul>
         <li>
-          <b><i>1</i>件商品，总商品金额</b>
-          <span>¥5399.00</span>
+          <b
+            ><i>{{ detailNums }}</i
+            >件商品，总商品金额</b
+          >
+          <span>¥{{ detailSumPrice }}</span>
         </li>
         <li>
           <b>返现：</b>
@@ -104,7 +95,9 @@
       </ul>
     </div>
     <div class="trade">
-      <div class="price">应付金额:　<span>¥5399.00</span></div>
+      <div class="price">
+        应付金额:　<span>¥{{ detailSumPrice }}</span>
+      </div>
       <div class="receiveInfo">
         寄送至:
         <span>{{ fullAddress }}</span>
@@ -128,14 +121,24 @@ export default {
       consignee: "",
       fullAddress: "",
       phoneNum: "",
+      detailArrayList: [],
+      detailNums: 0,
+      detailSumPrice: 0,
+      orderComment: "",
     };
   },
   computed: {
     ...mapState("login", ["UserAddress"]),
+    ...mapState("trade", ["OrderInfo"]),
   },
   watch: {
     UserAddress() {
       this.isAddress = this.UserAddress;
+    },
+    OrderInfo() {
+      this.detailArrayList = this.OrderInfo.detailArrayList;
+      this.detailNums = this.OrderInfo.totalNum;
+      this.detailSumPrice = this.OrderInfo.totalAmount;
     },
     isAddress: {
       deep: true,
@@ -161,8 +164,9 @@ export default {
   async mounted() {
     try {
       await this.$store.dispatch("login/getUserAddress");
+      await this.$store.dispatch("trade/getTradeInfo");
     } catch (error) {
-      console.log("获取地址失败");
+      console.log("获取订单信息失败");
     }
   },
 };

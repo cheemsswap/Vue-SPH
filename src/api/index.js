@@ -136,3 +136,12 @@ export const reqgetUserAddress = () => {
         method: 'get'
     })
 }
+
+//获取订单交易页信息
+// /api/order/auth/trade
+export const reqgetTradeInfo = () => {
+    return requests({
+        url: `/order/auth/trade`,
+        method: 'get'
+    })
+}

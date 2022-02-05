@@ -2056,3 +2056,128 @@ Vue.component(CarouselItem.name, CarouselItem);
             }
         }
 </pre>
+
+# 第七十六步 添加 获取订单交易页信息api  和 vuex 获取用户订单交易页信息接口
+<pre>
+    ---api
+        ---index.js
+        export const reqgetTradeInfo = () => {
+            return requests({
+                url: `/order/auth/trade`,
+                method: 'get'
+            })
+        }
+    ---store
+        ---trade
+            ---index.js
+        const state = {
+            OrderInfo: {}
+        }
+        const mutations = {
+            SETORDERINFO(states, data) {
+                states.OrderInfo = data
+            }
+        }
+        const actions = {
+            async getTradeInfo({ commit }) {
+                const request = await reqgetTradeInfo();
+                if (request.code == 200) {
+                    commit("SETORDERINFO", request.data)
+                }
+                else {
+                    return Promise.reject(new Error("faile"))
+                }
+            }
+        }
+</pre>
+
+# 第七十七步 订单提交页面Trade组件 使用订单交易页信息接口接口
+<pre>
+    ---view
+        ---Trade
+            ---index.vue
+        核心代码:
+        ```html
+        <div class="detail">
+            <h5>商品清单</h5>
+            <ul
+            class="list clearFix"
+            v-for="detail of detailArrayList"
+            :key="detail.skuId"
+            >
+                <li>
+                    <img
+                    style="width: 100px; height: 100px"
+                    :src="detail.imgUrl"
+                    alt=""
+                    />
+                </li>
+                <li>
+                    <p>{{ detail.skuName }}</p>
+                </li>
+                <li>
+                    <h3>￥{{ detail.orderPrice }}</h3>
+                </li>
+                <li>X{{ detail.skuNum }}</li>
+                <li>有货</li>
+            </ul>
+        </div>
+        ```
+        核心代码:
+        data() {
+            return {
+                detailArrayList: [],
+            };
+        },
+        computed: {
+            ...mapState("trade", ["OrderInfo"]),
+        },
+        watch: {
+            OrderInfo() {
+                this.detailArrayList = this.OrderInfo.detailArrayList;
+            },
+        },
+        async mounted() {
+            try {
+                await this.$store.dispatch("trade/getTradeInfo");
+            } catch (error) {
+                console.log("获取订单信息失败");
+            }
+        }
+</pre>
+
+# 第七十八步 订单提交页面Trade组件 增加订单数量，订单总价，订单备注的添加
+<pre>
+    ---view
+        ---Trade
+            ---index.vue
+        核心代码:
+        ```html
+        <div class="bbs">
+            <h5>买家留言：</h5>
+            <textarea
+            v-model="orderComment"
+            placeholder="建议留言前先与商家沟通确认"
+            class="remarks-cont">
+            </textarea>
+        </div>
+        <b><i>{{ detailNums }}</i>件商品，总商品金额</b>
+        <span>¥{{ detailSumPrice }}</span>
+         应付金额:　<span>¥{{ detailSumPrice }}</span>
+        ```
+        核心代码:
+        data() {
+            return {
+                detailNums: 0,
+                detailSumPrice: 0,
+                orderComment: "",
+            };
+        },
+        watch: {
+            OrderInfo() {
+                this.detailArrayList = this.OrderInfo.detailArrayList;
+                this.detailNums = this.OrderInfo.totalNum;
+                this.detailSumPrice = this.OrderInfo.totalAmount;
+            }
+        },
+</pre>
