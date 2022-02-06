@@ -17,6 +17,7 @@ import Detail from '@/views/Detail'
 import AddCartSuccess from '@/views/AddCartSuccess'
 import ShopCart from '@/views/ShopCart'
 import Trade from '@/views/Trade'
+import Pay from '@/views/Pay'
 const router = new VueRouter({
     routes: [
         {
@@ -82,6 +83,14 @@ const router = new VueRouter({
         {
             path: '/trade',
             component: Trade,
+            meta: {
+                isShowFooterList: true,
+                isLogin: true
+            },
+        },
+        {
+            path: '/pay',
+            component: Pay,
             meta: {
                 isShowFooterList: true,
                 isLogin: true

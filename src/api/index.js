@@ -145,3 +145,13 @@ export const reqgetTradeInfo = () => {
         method: 'get'
     })
 }
+
+// 16.提交订单 请求地址
+// /api/order/auth/submitOrder?tradeNo={tradeNo}
+export const reqSubmitOrder = ({ tradeNo, req }) => {
+    return requests({
+        url: `/order/auth/submitOrder?tradeNo=${tradeNo}`,
+        method: 'post',
+        data: req
+    })
+}

@@ -16,10 +16,12 @@ Vue.component(Carousel.name, Carousel);
 Vue.component(CarouselItem.name, CarouselItem);
 Vue.component(Pagination.name, Pagination);
 
+import * as API from '@/api'
 new Vue({
   render: h => h(App),
   beforeCreate() {
     Vue.prototype.$bus = this
+    Vue.prototype.$API = API
   },
   router,
   store,

@@ -106,7 +106,7 @@
       </div>
     </div>
     <div class="sub clearFix">
-      <router-link class="subBtn" to="/pay">提交订单</router-link>
+      <a class="subBtn" @click="submitOrder">提交订单</a>
     </div>
   </div>
 </template>
@@ -158,6 +158,29 @@ export default {
       for (const index in this.isAddress) {
         if (this.isAddress[index].id == id) this.isAddress[index].isDefault = 1;
         else this.isAddress[index].isDefault = 0;
+      }
+    },
+    async submitOrder() {
+      const tradeNo = this.OrderInfo.tradeNo;
+      const req = {
+        consignee: this.consignee,
+        consigneeTel: this.phoneNum,
+        deliveryAddress: this.fullAddress,
+        paymentWay: "ONLINE",
+        orderComment: this.orderComment,
+        orderDetailList: this.detailArrayList,
+      };
+      const requslt = await this.$API.reqSubmitOrder({ tradeNo, req });
+      if (requslt.code == 200) {
+        console.log("提交成功!" + requslt.data);
+        this.$router.push({
+          path: "/pay",
+          query: {
+            orderId: requslt.data,
+          },
+        });
+      } else {
+        alert("提交失败！" + requslt.message);
       }
     },
   },

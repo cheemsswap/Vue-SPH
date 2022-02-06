@@ -2181,3 +2181,124 @@ Vue.component(CarouselItem.name, CarouselItem);
             }
         },
 </pre>
+
+# 第七十九步 添加 提交订单信息api
+<pre>
+    ---api
+        ---index.js
+        核心代码:
+        export const reqSubmitOrder = ({ tradeNo, req }) => {
+            return requests({
+                url: `/order/auth/submitOrder?tradeNo=${tradeNo}`,
+                method: 'post',
+                data: req
+            })
+        }
+</pre>
+
+# 第八十步 将API接口 全部暴露到Vue实例的自定义全局总线上面,可以让组件随时可以使用接口api
+<pre>
+    ---main.js
+        核心代码:
+        import * as API from '@/api'
+        new Vue({
+            render: h => h(App),
+            beforeCreate() {
+                Vue.prototype.$bus = this
+                //新增代码:
+                Vue.prototype.$API = API
+            },
+            router,
+            store,
+            mounted() {
+                this.$store.dispatch("home/getBaseCategoryList");
+            }
+        }).$mount('#app')
+
+</pre>
+
+# 第八十一步 Trade组件 提交订单信息
+<pre>
+    ---view
+        ---Trade
+            ---index.vue
+        核心代码:
+        ```html
+        <a class="subBtn" @click="submitOrder">提交订单</a>
+        ```
+        核心代码:
+        methods: {
+            async submitOrder() {
+                const tradeNo = this.OrderInfo.tradeNo;
+                const req = {
+                    consignee: this.consignee,
+                    consigneeTel: this.phoneNum,
+                    deliveryAddress: this.fullAddress,
+                    paymentWay: "ONLINE",
+                    orderComment: this.orderComment,
+                    orderDetailList: this.detailArrayList,
+                };
+                const requslt = await this.$API.reqSubmitOrder({ tradeNo, req });
+                if (requslt.code == 200) {
+                    console.log("提交成功!" + requslt.data);
+
+                } else {
+                    alert("提交失败！" + requslt.message);
+                }
+            }
+        },
+</pre>
+
+# 第八十二步 新增Pay组件 并添加其路由
+<pre>
+    ---router
+        ---index.js
+        核心代码:
+        import Pay from '@/views/Pay'
+        {
+            path: '/pay',
+            component: Pay,
+            meta: {
+                isShowFooterList: true,
+                isLogin: true
+            },
+        }
+    ---view
+        ---Pay
+            ---index.vue
+        详情查看源文件
+</pre>
+
+# 第八十三步 为Trade组件 提交按钮 提交成功后 增加编程式路由跳转
+<pre>
+    ---view
+        ---Trade
+            ---index.vue
+        核心代码:
+        methods: {
+            async submitOrder() {
+                const tradeNo = this.OrderInfo.tradeNo;
+                const req = {
+                    consignee: this.consignee,
+                    consigneeTel: this.phoneNum,
+                    deliveryAddress: this.fullAddress,
+                    paymentWay: "ONLINE",
+                    orderComment: this.orderComment,
+                    orderDetailList: this.detailArrayList,
+                };
+                const requslt = await this.$API.reqSubmitOrder({ tradeNo, req });
+                if (requslt.code == 200) {
+                    console.log("提交成功!" + requslt.data);
+                    //新增代码:
+                    this.$router.push({
+                        path: "/pay",
+                        query: {
+                            orderId: requslt.data,
+                        },
+                    });
+                } else {
+                    alert("提交失败！" + requslt.message);
+                }
+            }
+        },
+</pre>
