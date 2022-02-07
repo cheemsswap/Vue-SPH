@@ -9,6 +9,7 @@ import cart from './cart'
 import register from './register'
 import login from './login'
 import trade from './trade'
+import pay from './pay'
 export default new Vuex.Store({
     modules: {
         home,
@@ -17,6 +18,7 @@ export default new Vuex.Store({
         cart,
         register,
         login,
-        trade
+        trade,
+        pay
     }
 })

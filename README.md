@@ -2302,3 +2302,287 @@ Vue.component(CarouselItem.name, CarouselItem);
             }
         },
 </pre>
+
+# 第八十四步 添加 获取订单支付信息api 并 vuex -> Pay 可以获取支付信息
+<pre>
+    ---api
+        ---index.js
+        核心代码:
+        export const reqgetOrderInfo = (orderId) => {
+            return requests({
+                url: `/payment/weixin/createNative/${orderId}`,
+                method: 'get'
+            })
+        }
+    ---store
+        ---Pay
+            ---index.js
+        核心代码:
+        const state = {
+            OrderInfo: {}
+        }
+        const mutations = {
+            SETORDERINFO(states, data) {
+                states.OrderInfo = data
+            }
+        }
+
+        const actions = {
+            async getOrderInfo({ commit }, orderId) {
+                const result = await reqgetOrderInfo(orderId);
+                if (result.code == 200) {
+                    commit("SETORDERINFO", result.data)
+                }
+                else {
+                    return Promise.reject(new Error("faile"))
+                }
+            }
+        }
+</pre>
+
+# 第八十五步 Pay组件根据 query的请求参数是否有进行前置路由的筛选
+<pre>
+    ---view
+        ---Pay
+            ---index.vue
+        beforeRouteEnter(to, from, next) {
+            if (to.query.orderId) next();
+            else next("/");
+        }
+</pre>
+
+# 第八十六步 Pay组件 挂载之后 获取订单信息 并做展示
+<pre>
+    ---view
+        ---Pay
+            ---index.vue
+        核心代码:
+        ```html
+        <em class="lead">应付金额：</em>
+        <em class="orange money">￥{{ OrderInfo.totalFee }}</em>
+        ```
+        核心代码:
+        data() {
+            return {
+                orderId: "",
+            };
+        },
+        computed: {
+            ...mapState("pay", ["OrderInfo"]),
+        },
+        mounted() {
+            this.getOrderInfo();
+        },
+        methods: {
+            async getOrderInfo() {
+                try {
+                    this.orderId = this.$route.query.orderId;
+                    await this.$store.dispatch("pay/getOrderInfo", this.orderId);
+                } catch (error) {
+                    this.$router.go(-1);
+                }
+            }
+        }
+</pre>
+
+# 第八十七步 引用element UI 的 MessageBox 组件
+<pre>
+    ---main.js
+    核心代码:
+    import { MessageBox } from 'element-ui';
+    Vue.prototype.$alert = MessageBox.alert;
+</pre>
+
+# 第九十步 Pay组件 对立即支付按钮 使用 MessageBox 组件
+<pre>
+    ---view
+        ---Pay
+            ---index.vue
+        核心代码:
+        ```html
+        <a class="btn" @click="open">立即支付</a>
+        ```
+        核心代码:
+        methods: {
+            open() {
+                this.$alert(`我是图片应该在的位置`,"请使用微信扫码支付",
+                {
+                dangerouslyUseHTMLString: true,
+                center: true,
+                showClose: false,
+                showCancelButton: true,
+                showConfirmButton: true,
+                cancelButtonText: "支付遇见问题",
+                confirmButtonText: "我已支付",
+                }
+                )
+                .then((data) => {
+                    console.log(data);
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+            }
+        }
+</pre>
+
+# 第九十一步 安装qrcode插件 用于生成二维码
+<pre>
+    ---安装 二维码插件 qrcode
+    npm i qrcode
+
+    ---main.js
+        核心代码:
+        import QRCode from 'qrcode'
+        Vue.prototype.$QRCode = QRCode
+</pre>
+
+# 第九十二步 在Pay组件 对二维码插件进行使用
+<pre>
+    ---view
+        ---Pay
+            ---index.vue
+        核心代码:
+        ```html
+        <a class="btn" @click="open">立即支付</a>
+        ```
+        核心代码:
+        data() {
+            return {
+                //保存图片二维码地址
+                imgurl: "",
+            };
+        },
+        methods: {
+            async getOrderInfo() {
+                try {
+                    this.orderId = this.$route.query.orderId;
+                    await this.$store.dispatch("pay/getOrderInfo", this.orderId);
+                    //二维码的图片的生成
+                    this.$QRCode.toDataURL(this.OrderInfo.codeUrl).then((url) => {
+                        this.imgurl = url;
+                    });
+                } 
+                catch (error) {
+                    this.$router.go(-1);
+                }
+            },
+            open() {
+                this.$alert(
+                `<img src='${this.imgurl}' alt='二维码已经失效'/>`,
+                "请使用微信扫码支付",
+                {
+                dangerouslyUseHTMLString: true,
+                center: true,
+                showClose: false,
+                showCancelButton: true,
+                showConfirmButton: true,
+                cancelButtonText: "支付遇见问题",
+                confirmButtonText: "我已支付",
+                }
+                )
+                .then((data) => {
+                console.log(data);
+                })
+                .catch((error) => {
+                console.log(error);
+                });
+            },
+        },
+</pre>
+
+# 第九十三步 增加查询支付状态api
+<pre>
+    ---api
+        ---index.js
+        核心代码:
+        export const reqgetPayStatus = (orderId) => {
+            return requests({
+                url: `/payment/weixin/queryPayStatus/${orderId}`,
+                method: 'get'
+            })
+        }
+</pre>
+
+# 第九十四步 Pay组件定时发送请求 获取支付状态
+<pre>
+    ---view
+        ---Pay
+            ---index.vue
+        核心代码:
+        methods: {
+            open() {
+                this.$alert(
+                `<img src='${this.imgurl}' alt='二维码已经失效'/>`,
+                "请使用微信扫码支付",
+                {
+                dangerouslyUseHTMLString: true,
+                center: true,
+                showClose: false,
+                showCancelButton: true,
+                showConfirmButton: true,
+                cancelButtonText: "支付遇见问题",
+                confirmButtonText: "我已支付",
+                }
+                )
+                .then(async (data) => {
+                    console.log(data);
+                    clearInterval(this.timmer);
+                    this.timmer = undefined;
+                    const result = await this.$API.reqgetPayStatus(this.orderId);
+                    if (result.code == 200) {
+                        clearInterval(this.timmer);
+                        this.timmer = undefined;
+                        console.log("支付成功");
+                    } else {
+                        console.log("未支付成功");
+                    }
+                })
+                .catch((error) => {
+                    console.log(error);
+                    clearInterval(this.timmer);
+                    this.timmer = undefined;
+                });
+                if (!this.timmer)
+                    this.timmer = setInterval(async () => {
+                        const result = await this.$API.reqgetPayStatus(this.orderId);
+                        if (result.code == 200) {
+                            clearInterval(this.timmer);
+                            this.timmer = undefined;
+                            console.log("支付成功");
+                            this.$msgbox.close();
+                        } else {
+                            console.log(result.message);
+                        }
+                    }, 2000);
+            }
+        }
+</pre>
+
+# 第九十五步 新增PaySuccess页面 和 路由设置
+<pre>
+    ---view
+        ---PaySuccess
+            ---index.vue
+        详情查看文件
+    ---router
+        ---index.js
+        核心代码:
+        {
+            path: '/paysuccess',
+            component: PaySuccess,
+            meta: {
+                isShowFooterList: true,
+                isLogin: true
+            },
+        },    
+</pre>
+
+# 第九十六步 Pay组件 支付成功跳转 PaySuccess路由
+<pre>
+    ---view
+        ---Pay
+            ---index.vue
+        核心代码:
+        this.$router.push("/paysuccess");
+</pre>

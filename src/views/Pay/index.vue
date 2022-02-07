@@ -15,7 +15,7 @@
           >
           <span class="fr"
             ><em class="lead">应付金额：</em
-            ><em class="orange money">￥17,654</em></span
+            ><em class="orange money">￥{{ OrderInfo.totalFee }}</em></span
           >
         </div>
       </div>
@@ -74,7 +74,7 @@
         <div class="hr"></div>
 
         <div class="submit">
-          <router-link class="btn" to="/paysuccess">立即支付</router-link>
+          <a class="btn" @click="open">立即支付</a>
         </div>
         <div class="otherpay">
           <div class="step-tit">
@@ -91,8 +91,94 @@
 </template>
 
 <script>
+import { mapState } from "vuex";
 export default {
   name: "Pay",
+  data() {
+    return {
+      orderId: "",
+      imgurl: "",
+    };
+  },
+  computed: {
+    ...mapState("pay", ["OrderInfo"]),
+  },
+  beforeRouteEnter(to, from, next) {
+    if (to.query.orderId) next();
+    else next("/");
+  },
+  mounted() {
+    this.getOrderInfo();
+  },
+  methods: {
+    async getOrderInfo() {
+      try {
+        this.orderId = this.$route.query.orderId;
+        await this.$store.dispatch("pay/getOrderInfo", this.orderId);
+        this.$QRCode
+          .toDataURL(this.OrderInfo.codeUrl)
+          .then((url) => {
+            this.imgurl = url;
+          })
+          .catch((error) => {
+            console.log("二维码已经失效");
+          });
+      } catch (error) {
+        this.$router.go(-1);
+      }
+    },
+    open() {
+      this.$alert(
+        `<img src='${this.imgurl}' alt='二维码已经失效'/>`,
+        "请使用微信扫码支付",
+        {
+          dangerouslyUseHTMLString: true,
+          center: true,
+          showClose: false,
+          showCancelButton: true,
+          showConfirmButton: true,
+          cancelButtonText: "支付遇见问题",
+          confirmButtonText: "我已支付",
+        }
+      )
+        .then(async (data) => {
+          console.log(data);
+          clearInterval(this.timmer);
+          this.timmer = undefined;
+          const result = await this.$API.reqgetPayStatus(this.orderId);
+          if (result.code == 200) {
+            clearInterval(this.timmer);
+            this.timmer = undefined;
+            console.log("支付成功");
+            this.$router.push("/paysuccess");
+          } else {
+            console.log("未支付成功");
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+          clearInterval(this.timmer);
+          this.timmer = undefined;
+        });
+      if (!this.timmer)
+        this.timmer = setInterval(async () => {
+          const result = await this.$API.reqgetPayStatus(this.orderId);
+          if (result.code == 200) {
+            clearInterval(this.timmer);
+            this.timmer = undefined;
+            console.log("支付成功");
+            this.$msgbox.close();
+            this.$router.push("/paysuccess");
+          } else {
+            console.log(result.message);
+          }
+        }, 2000);
+    },
+  },
+  destroyed() {
+    clearInterval(this.timmer);
+    this.timmer = undefined;
+  },
 };
 </script>
 

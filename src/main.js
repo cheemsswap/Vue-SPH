@@ -10,11 +10,14 @@ Vue.config.productionTip = false
 
 import '@/mock/mockServe'
 
-import { Carousel, CarouselItem, Pagination } from 'element-ui';
+import { Carousel, CarouselItem, Pagination, MessageBox } from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
 Vue.component(Carousel.name, Carousel);
 Vue.component(CarouselItem.name, CarouselItem);
 Vue.component(Pagination.name, Pagination);
+Vue.prototype.$alert = MessageBox.alert;
+Vue.prototype.$msgbox = MessageBox;
+import QRCode from 'qrcode'
 
 import * as API from '@/api'
 new Vue({
@@ -22,6 +25,7 @@ new Vue({
   beforeCreate() {
     Vue.prototype.$bus = this
     Vue.prototype.$API = API
+    Vue.prototype.$QRCode = QRCode
   },
   router,
   store,
