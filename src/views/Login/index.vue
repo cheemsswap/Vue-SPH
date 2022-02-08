@@ -93,7 +93,9 @@ export default {
       };
       let result = await this.$store.dispatch("login/getLogin", req);
       if (result) {
-        this.$router.push("/home");
+        this.$router.push({
+          path: this.$route.query.redirect || "/home",
+        });
       } else {
         alert("登录失败");
       }

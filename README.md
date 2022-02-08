@@ -2586,3 +2586,280 @@ Vue.component(CarouselItem.name, CarouselItem);
         核心代码:
         this.$router.push("/paysuccess");
 </pre>
+
+# 第九十七步 新增Center组件 和 他的2个子组件 MyOrder 和 GroupOrder，并配置路由
+<pre>
+    ---view
+        ---Center
+            ---index.vue
+            核心代码:
+            ```html
+            <dd><router-link to="/center/myorder">我的订单</router-link></dd>
+            <dd><router-link to="/center/grouporder">团购订单</router-link></dd>
+            
+             <!-- 右侧内容 -->
+            <keep-alive>
+                <router-view></router-view>
+            </keep-alive>
+            ```
+            ---MyOrder
+                ---index.vue
+            ---GroupOrder
+                ---index.vue
+    ---rouer
+        ---index.vue
+        核心代码:
+        import Center from '@/views/Center'
+        import MyOrder from '@/views/Center/MyOrder'
+        import GroupOrder from '@/views/Center/GroupOrder'
+        {
+            path: '/center',
+            component: Center,
+            meta: {
+                isShowFooterList: true,
+                isLogin: true
+            },
+            redirect: '/center/myorder',
+            children: [
+                {
+                    path: 'myorder',
+                    component: MyOrder,
+                    meta: {
+                        isShowFooterList: true,
+                        isLogin: true
+                    },
+                },
+                {
+                    path: 'grouporder',
+                    component: GroupOrder,
+                    meta: {
+                        isShowFooterList: true,
+                        isLogin: true
+                    },
+                }
+            ]
+        }
+</pre>
+
+# 第九十八步 添加获取我的订单列表API
+<pre>
+    ---api
+        ---index.vue
+        核心代码:
+        export const reqgetOrderList = ({ page, limit }) => {
+            return requests({
+                url: `/order/auth/${page}/${limit}`,
+                method: 'get'
+            })
+        }
+</pre>
+
+# 第九十九步 在MyOrder组件里面使用API获取订单参数
+<pre>
+    ---view
+        ---Center
+            ---MyOrder
+                ---index.vue
+            核心代码:
+            ```html
+            <div class="orders">
+                <table
+                class="order-item"
+                v-for="records of orderList.records"
+                :key="records.id"
+                >
+                    <thead>
+                        <tr>
+                            <th colspan="5">
+                            <span class="ordertitle">
+                            {{ records.createTime }}
+                            订单编号：{{ records.outTradeNo }}
+                                <span class="pull-right delete">
+                                    <img src="../images/delete.png" />
+                                </span>
+                            </span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr
+                        v-for="(orderDetail, index) of records.orderDetailList"
+                        :key="orderDetail.id"
+                        >
+                            <td width="60%">
+                                <div class="typographic">
+                                    <img
+                                    :src="orderDetail.imgUrl"
+                                    style="width: 100px; height: 100px"
+                                    />
+                                    <a href="#" class="block-text">
+                                    {{ orderDetail.skuName }}
+                                    </a>
+                                    <span>x{{ orderDetail.skuNum }}</span>
+                                    <a href="#" class="service">售后申请</a>
+                                </div>
+                            </td>
+                            <template v-if="index == 0">
+                                <td
+                                :rowspan="records.orderDetailList.length"
+                                width="8%"
+                                class="center"
+                                >
+                                {{ records.consignee }}
+                                </td>
+                                <td
+                                :rowspan="records.orderDetailList.length"
+                                width="13%"
+                                class="center"
+                                >
+                                    <ul class="unstyled">
+                                        <li>总金额¥{{ records.totalAmount }}</li>
+                                        <li>{{ records.paymentWay }}</li>
+                                    </ul>
+                                </td>
+                                <td
+                                :rowspan="records.orderDetailList.length"
+                                width="8%"
+                                class="center"
+                                >
+                                    <a href="#" class="btn">{{ records.orderStatusName }} </a>
+                                </td>
+                                <td
+                                :rowspan="records.orderDetailList.length"
+                                width="13%"
+                                class="center"
+                                >
+                                    <ul class="unstyled">
+                                        <li>
+                                            <a href="mycomment.html" target="_blank">评价|晒单</a>
+                                        </li>
+                                    </ul>
+                                </td>
+                            </template>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            ````
+            核心代码:
+            data() {
+                return {
+                    page: this.$route.params.page || 1,
+                    limit: 3,
+                    orderList: {},
+                };
+            },
+            methods: {
+                async getOrderList() {
+                    let result = await this.$API.reqgetOrderList({
+                    page: this.page,
+                    limit: this.limit,
+                    });
+                    if (result.code == 200) {
+                        this.orderList = result.data;
+                    }
+                }
+            },
+            mounted() {
+                this.getOrderList();
+            },
+</pre>
+# 第一百步 MyOrder组件 增加分页 使用element UI 
+<pre>
+    ---view
+        ---Center
+            ---MyOrder
+                ---index.vue
+        核心代码:
+        ```html
+        <div class="choose-order">
+            <el-pagination
+            :page-size="limit"
+            @current-change="handleCurrentChange"
+            layout="total, prev, pager, next,jumper"
+            :total="orderList.total"
+            :current-page.sync="page"
+            prev-text="上一页"
+            next-text="下一页"
+            >
+            </el-pagination>
+        </div>
+        ```
+        核心代码:
+        methods: {
+            handleCurrentChange(val) {
+                this.page = val;
+                this.getOrderList();
+            },
+        },
+</pre>
+
+# 第一百零一步 增加用户体验->从必须要登录的地方跳转到登录页面 登录完成会跳转到原页面
+<pre>
+    ---router
+        ---index.js
+        核心代码:
+        //从必须要登录的地方跳转到登录页面 在地址栏传个query参数
+        if (to.meta.isLogin) {
+            next({
+                path: '/login',
+                query: {
+                    redirect: to.path
+                }
+            })
+        }
+    ---view
+        ---Login
+            ---index.vue
+        核心代码:
+        methods: {
+            async login() {
+                const req = {
+                    phone: this.phone,
+                    password: this.password,
+                };
+                let result = await this.$store.dispatch("login/getLogin", req);
+                if (result) {
+                    //登录完成不在盲目的返回/home 如果有query参数则跳到query指定的地址
+                    this.$router.push({
+                        path: this.$route.query.redirect || "/home",
+                    });
+                }else {
+                    alert("登录失败");
+                }
+            }
+        },
+</pre>
+
+# 第一百零二步 增加安全->从必须要交易页面必须要从购物车跳转过来才行,支付成功页面必须要从支付页面跳转过来才行
+<pre>
+    ---router
+        ---index.vue
+        核心代码:
+        {
+            path: '/trade',
+            component: Trade,
+            meta: {
+                isShowFooterList: true,
+                isLogin: true
+            },
+            //新增代码：
+            beforeEnter: (to, from, next) => {
+                if (from.path == '/shopcart') next()
+                else next(from.path)
+            },
+        },
+        {
+            path: '/paysuccess',
+            component: PaySuccess,
+            meta: {
+                isShowFooterList: true,
+                isLogin: true
+            },
+            //新增代码：
+            beforeEnter: (to, from, next) => {
+                if (from.path == '/pay') next()
+                else next(from.path)
+            },
+        }
+</pre>

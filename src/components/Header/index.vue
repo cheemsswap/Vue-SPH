@@ -17,7 +17,7 @@
           </p>
         </div>
         <div class="typeList">
-          <a href="###">我的订单</a>
+          <router-link to="/center">我的订单</router-link>
           <router-link to="/shopcart">我的购物车</router-link>
           <a href="###">我的尚品汇</a>
           <a href="###">尚品汇会员</a>
@@ -87,6 +87,7 @@ export default {
     async Logout() {
       try {
         let result = await this.$store.dispatch("login/Logout");
+        this.$router.push("/login");
       } catch (error) {
         console.log("退出登录失败");
       }

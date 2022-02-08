@@ -19,6 +19,9 @@ import ShopCart from '@/views/ShopCart'
 import Trade from '@/views/Trade'
 import Pay from '@/views/Pay'
 import PaySuccess from '@/views/PaySuccess'
+import Center from '@/views/Center'
+import MyOrder from '@/views/Center/MyOrder'
+import GroupOrder from '@/views/Center/GroupOrder'
 const router = new VueRouter({
     routes: [
         {
@@ -88,6 +91,10 @@ const router = new VueRouter({
                 isShowFooterList: true,
                 isLogin: true
             },
+            beforeEnter: (to, from, next) => {
+                if (from.path == '/shopcart') next()
+                else next(from.path)
+            },
         },
         {
             path: '/pay',
@@ -104,6 +111,37 @@ const router = new VueRouter({
                 isShowFooterList: true,
                 isLogin: true
             },
+            beforeEnter: (to, from, next) => {
+                if (from.path == '/pay') next()
+                else next(from.path)
+            },
+        },
+        {
+            path: '/center',
+            component: Center,
+            meta: {
+                isShowFooterList: true,
+                isLogin: true
+            },
+            redirect: '/center/myorder',
+            children: [
+                {
+                    path: 'myorder/:page?',
+                    component: MyOrder,
+                    meta: {
+                        isShowFooterList: true,
+                        isLogin: true
+                    },
+                },
+                {
+                    path: 'grouporder',
+                    component: GroupOrder,
+                    meta: {
+                        isShowFooterList: true,
+                        isLogin: true
+                    },
+                }
+            ]
         },
     ],
     scrollBehavior(to, from, savedPosition) {
@@ -134,8 +172,14 @@ router.beforeEach(async (to, from, next) => {
         next();
         return
     }
-    if (to.meta.isLogin)
-        next('/login')
+    if (to.meta.isLogin) {
+        next({
+            path: '/login',
+            query: {
+                redirect: to.path
+            }
+        })
+    }
     else
         next('/home')
 })
