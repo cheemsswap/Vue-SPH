@@ -30,7 +30,7 @@
                 }"
                 target="_blank"
               >
-                <img :src="good.defaultImg" alt="图片裂了 点我" />
+                <img v-lazy="good.defaultImg" alt="图片裂了 点我" />
               </router-link>
             </div>
             <div class="price">

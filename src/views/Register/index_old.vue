@@ -14,69 +14,38 @@
           v-model.number="phone"
           type="text"
           placeholder="请输入你的手机号"
-          v-validate="'required|phone'"
-          name="手机号"
         />
-        <span v-show="errors.first('手机号')" class="error-msg">
-          {{ errors.first("手机号") }}
-        </span>
+        <span v-text="phoneerrormsg" class="error-msg"></span>
       </div>
       <div class="content">
         <label>验证码:</label>
-        <input
-          v-model="code"
-          type="text"
-          placeholder="请输入验证码"
-          v-validate="'required'"
-          name="验证码"
-        />
+        <input v-model="code" type="text" placeholder="请输入验证码" />
         <button
           @click="getRegisterCode"
           style="width: 100px; height: 38px; margin-left: 5px"
         >
           获取验证码
         </button>
-        <span v-show="errors.first('验证码')" class="error-msg">{{
-          errors.first("验证码")
-        }}</span>
+        <span v-text="codeerroemsg" class="error-msg"></span>
       </div>
       <div class="content">
         <label>登录密码:</label>
         <input
           v-model="password1"
-          type="password"
+          type="text"
           placeholder="请输入你的登录密码"
-          v-validate="'required|min:6'"
-          name="登录密码"
         />
-        <span v-show="errors.first('登录密码')" class="error-msg">{{
-          errors.first("登录密码")
-        }}</span>
+        <span v-text="password1errormsg" class="error-msg"></span>
       </div>
       <div class="content">
         <label>确认密码:</label>
-        <input
-          v-model="password2"
-          type="password"
-          placeholder="请输入确认密码"
-          v-validate="{ required: true, ConfirmPassword: password1 }"
-          name="确认密码"
-        />
-        <span v-show="errors.first('确认密码')" class="error-msg">{{
-          errors.first("确认密码")
-        }}</span>
+        <input v-model="password2" type="text" placeholder="请输入确认密码" />
+        <span v-text="password2errormsg" class="error-msg"></span>
       </div>
       <div class="controls">
-        <input
-          v-model="agree"
-          name="用户协议"
-          v-validate="'required'"
-          type="checkbox"
-        />
+        <input v-model="agree" name="m1" type="checkbox" />
         <span>同意协议并注册《尚品汇用户协议》</span>
-        <span v-show="errors.first('用户协议')" class="error-msg">{{
-          errors.first("用户协议")
-        }}</span>
+        <span v-text="agreeerroemsg" class="error-msg"></span>
       </div>
       <div class="btn">
         <button @click="registerSubmit">完成注册</button>
@@ -107,40 +76,105 @@ export default {
   data() {
     return {
       phone: "",
+      phoneerrormsg: "",
       code: "",
+      codeerroemsg: "",
       password1: "",
+      password1errormsg: "",
       password2: "",
+      password2errormsg: "",
       agree: false,
+      agreeerroemsg: "",
     };
   },
-  methods: {
-    async getRegisterCode() {
-      await this.$validator.validate("手机号").then(async (e) => {
-        if (e) {
-          await this.$store.dispatch("register/getRegisterCode", this.phone);
-          this.code = this.$store.state.register.code;
-        }
-      });
+  watch: {
+    phone() {
+      this.isPhone();
     },
-    async registerSubmit() {
-      await this.$validator.validateAll().then(async (e) => {
-        if (e) {
-          const req = {
-            phone: this.phone,
-            password: this.password1,
-            code: this.code,
-          };
-          let result = await this.$store.dispatch("register/getRegister", req);
-          if (result.code == 200) {
-            alert("注册成功！");
-            this.$router.push("/login");
-          } else {
-            alert(result.message);
-          }
-        }
-      });
+    code() {
+      this.isCode();
+    },
+    password1() {
+      this.ispassword1();
+    },
+    password2() {
+      this.ispassword2();
     },
   },
+  methods: {
+    isPhone() {
+      if (this.phone >= 10000000000 && this.phone <= 99999999999) {
+        this.phoneerrormsg = "";
+        return true;
+      }
+      this.phoneerrormsg = "请输入正确的手机号码";
+      return false;
+    },
+    isCode() {
+      if (this.code != "") {
+        this.codeerroemsg = "";
+        return true;
+      }
+      this.codeerroemsg = "验证码不能位空";
+      return false;
+    },
+    ispassword1() {
+      if (this.password1.length >= 6) {
+        this.password1errormsg = "";
+        return true;
+      }
+      this.password1errormsg = "密码需要6位以上，请重新输入";
+      return false;
+    },
+    ispassword2() {
+      if (this.password1 == this.password2) {
+        this.password2errormsg = "";
+        return true;
+      }
+      this.password2errormsg = "密码不一致";
+      return false;
+    },
+    isagree() {
+      if (this.agree) {
+        this.agreeerroemsg = "";
+        return true;
+      }
+      this.agreeerroemsg = "请同意协议";
+      return false;
+    },
+    async getRegisterCode() {
+      if (!(this.phone >= 10000000000 && this.phone <= 99999999999)) {
+        this.phoneerrormsg = "请输入正确的手机号码";
+        return;
+      }
+      this.phoneerrormsg = "";
+      await this.$store.dispatch("register/getRegisterCode", this.phone);
+      this.code = this.$store.state.register.code;
+    },
+    async registerSubmit() {
+      let flag = true;
+      if (!this.isPhone()) flag = false;
+      if (!this.isCode()) flag = false;
+      if (!this.ispassword1()) flag = false;
+      if (!this.ispassword2()) flag = false;
+      if (!this.isagree()) flag = false;
+      if (flag) {
+        const req = {
+          phone: this.phone,
+          password: this.password1,
+          code: this.code,
+        };
+        let result = await this.$store.dispatch("register/getRegister", req);
+        if (result.code == 200) {
+          alert("注册成功！");
+          this.$router.push("/login");
+        } else {
+          alert(result.message);
+        }
+      }
+    },
+  },
+  computed: {},
 };
 </script>
 

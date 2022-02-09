@@ -1,4 +1,15 @@
+# 使用方法：
+<pre>
+    使用如下:
+    1、第一步更新全局包
+    npm update
+    2、第二步添加依赖
+    npm i
+    3、第三步启动
+    npm run serve
+</pre>
 
+# 以下为我的开发记录
 # 第一步 添加项目运行时自动打开浏览器
 <pre>
 --- package.json
@@ -2863,3 +2874,232 @@ Vue.component(CarouselItem.name, CarouselItem);
             },
         }
 </pre>
+
+# 第一百零三步 优化->安装懒加载插件 为图片添加懒加载 
+<pre>
+    安装懒加载插件
+    npm i vue-lazyload
+    使用懒加载
+    1、新增一个加载动画和图片失效
+    ---assets
+        ---loading.gif
+        ---error.jpg
+    2、main.js注册使用
+    ---main.js
+        import VueLazyload from 'vue-lazyload'
+        const loadimage = require('./assets/loading.gif')
+        const errorimage = require('./assets/error.jpg')
+        Vue.use(VueLazyload, {
+            loading: loadimage,
+            error: errorimage,
+        })
+    3、使用懒加载
+    ---view
+        ---Search
+            ---Details
+                ---index.vue
+        核心代码:
+        ```html
+        <img v-lazy="good.defaultImg" alt="图片裂了 点我" />
+        ```
+</pre>
+
+# 第一百零四步 优化->安装表单校验插件 vee-validate@2
+<pre>
+    安装表单校验插件
+    npm install vee-validate@2
+    新建文件
+    ---utils
+        ---validate.js
+    
+    ---mian.js
+        核心代码:
+        import '@/utils/validate'
+</pre>
+# 第一百零五步 优化->安装国家化插件 vue-i18n使表单校验插件支持中文
+<pre>
+    安装国际化插件
+    npm i vue-i18n
+
+    配置表单校验
+    ---utils
+        ---validate.js
+        核心代码:
+        import Vue from 'vue'
+        import VeeValidate, { Validator } from 'vee-validate'
+        import zh_CN from 'vee-validate/dist/locale/zh_CN'
+        import VueI18n from 'vue-i18n';
+        Vue.use(VueI18n)
+        const i18n = new VueI18n({
+            locale: 'zh_CN',
+        })
+        Vue.use(VeeValidate, {
+                i18n,
+                i18nRootKey: 'validation',
+                dictionary: {
+                zh_CN
+            }   
+        });
+</pre>
+
+# 第一百零六步 增加表单校验自定义选项
+<pre>
+    ---utils
+        ---validate.js
+        核心代码:
+        Validator.extend('required', {
+            getMessage: (field) => {
+                //fidld为name的参数
+                return field + '不能为空'
+            },
+            validate: value => {
+                return !!value
+            }
+        })
+        Validator.extend('phone', {
+            getMessage: (field) => {
+                return '请输入正确的手机号码'
+            },
+            validate: value => {
+                return /^(13[0-9]|14[01456879]|15[0-35-9]|16[2567]|17[0-8]|18[0-9]|19[0-35-9])\d{8}$/.test(value)
+            }
+        })
+        Validator.extend('ConfirmPassword', {
+            getMessage: (field) => {
+                return '密码不一致'
+            },
+            validate: (value, a) => {
+                if (value == a) return true
+                    return false
+            }
+        })
+</pre>
+
+# 第一百零七步 对Register注册组件 进行重写
+<pre>
+    ---view
+        ---Regitser
+            ---index.vue
+        核心代码:
+        ```html -> 手机号
+        <div class="content">
+            <label>手机号:</label>
+            <input
+            v-model.number="phone"
+            type="text"
+            placeholder="请输入你的手机号"
+            v-validate="'required|phone'"
+            name="手机号"
+            />
+            <span v-show="errors.first('手机号')" class="error-msg">
+            {{ errors.first("手机号") }}
+            </span>
+        </div>
+        ```
+        ```html -> 验证码
+        <div class="content">
+            <label>验证码:</label>
+            <input
+                v-model="code"
+                type="text"
+                placeholder="请输入验证码"
+                v-validate="'required'"
+                name="验证码"
+            />
+            <button
+                @click="getRegisterCode"
+                style="width: 100px; height: 38px; margin-left: 5px"
+            >
+                获取验证码
+            </button>
+            <span v-show="errors.first('验证码')" class="error-msg">
+                {{errors.first("验证码")}}
+            </span>
+        </div>
+        ```
+        ```html 登录密码
+        <div class="content">
+            <label>登录密码:</label>
+            <input
+            v-model="password1"
+            type="password"
+            placeholder="请输入你的登录密码"
+            v-validate="'required|min:6'"
+            name="登录密码"
+            />
+            <span v-show="errors.first('登录密码')" class="error-msg">
+                {{errors.first("登录密码")}}
+            </span>
+        </div>
+        ```
+        ```html 确认密码
+        <div class="content">
+            <label>确认密码:</label>
+            <input
+            v-model="password2"
+            type="password"
+            placeholder="请输入确认密码"
+            v-validate="{ required: true, ConfirmPassword: password1 }"
+            name="确认密码"
+            />
+            <span v-show="errors.first('确认密码')" class="error-msg">
+                {{errors.first("确认密码")}}
+            </span>
+        </div>
+      ```
+      ```html 用户协议
+      <div class="controls">
+        <input
+          v-model="agree"
+          name="用户协议"
+          v-validate="'required'"
+          type="checkbox"
+        />
+        <span>同意协议并注册《尚品汇用户协议》</span>
+        <span v-show="errors.first('用户协议')" class="error-msg">
+            {{errors.first("用户协议")}}
+        </span>
+      </div>
+      ```
+        核心代码:
+        data() {
+            return {
+                phone: "",
+                code: "",
+                password1: "",
+                password2: "",
+                agree: false,
+            };
+        },
+        methods: {
+            async getRegisterCode() {
+                await this.$validator.validate("手机号").then(async (e) => {
+                    if (e) {
+                        await this.$store.dispatch("register/getRegisterCode", this.phone);
+                        this.code = this.$store.state.register.code;
+                    }
+                });
+            },
+            async registerSubmit() {
+                await this.$validator.validateAll().then(async (e) => {
+                    if (e) {
+                        const req = {
+                            phone: this.phone,
+                            password: this.password1,
+                            code: this.code,
+                        };
+                        let result = await this.$store.dispatch("register/getRegister", req);
+                        if (result.code == 200) {
+                            alert("注册成功！");
+                            this.$router.push("/login");
+                        } else {
+                            alert(result.message);
+                        }
+                    }
+                });
+            },
+        } 
+</pre>
+
+
+

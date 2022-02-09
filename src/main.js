@@ -20,6 +20,15 @@ Vue.prototype.$msgbox = MessageBox;
 import QRCode from 'qrcode'
 
 import * as API from '@/api'
+import VueLazyload from 'vue-lazyload'
+const loadimage = require('./assets/loading.gif')
+const errorimage = require('./assets/error.jpg')
+Vue.use(VueLazyload, {
+  loading: loadimage,
+  error: errorimage,
+})
+//表单校验
+import '@/utils/validate'
 new Vue({
   render: h => h(App),
   beforeCreate() {
