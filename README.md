@@ -7,6 +7,8 @@
     npm i
     3、第三步启动
     npm run serve
+    
+    或者 直接可以运行的程序 右侧下载 v0.0.1 window.zip 已经打包好在nginx中
 </pre>
 
 # 以下为我的开发记录
