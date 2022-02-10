@@ -15,10 +15,10 @@
           type="text"
           placeholder="请输入你的手机号"
           v-validate="'required|phone'"
-          name="手机号"
+          name="phone"
         />
-        <span v-show="errors.first('手机号')" class="error-msg">
-          {{ errors.first("手机号") }}
+        <span v-show="errors.first('phone')" class="error-msg">
+          {{ errors.first("phone") }}
         </span>
       </div>
       <div class="content">
@@ -28,7 +28,7 @@
           type="text"
           placeholder="请输入验证码"
           v-validate="'required'"
-          name="验证码"
+          name="code"
         />
         <button
           @click="getRegisterCode"
@@ -36,8 +36,8 @@
         >
           获取验证码
         </button>
-        <span v-show="errors.first('验证码')" class="error-msg">{{
-          errors.first("验证码")
+        <span v-show="errors.first('code')" class="error-msg">{{
+          errors.first("code")
         }}</span>
       </div>
       <div class="content">
@@ -46,11 +46,11 @@
           v-model="password1"
           type="password"
           placeholder="请输入你的登录密码"
-          v-validate="'required|min:6'"
-          name="登录密码"
+          v-validate="'required|min:6|max:20'"
+          name="password1"
         />
-        <span v-show="errors.first('登录密码')" class="error-msg">{{
-          errors.first("登录密码")
+        <span v-show="errors.first('password1')" class="error-msg">{{
+          errors.first("password1")
         }}</span>
       </div>
       <div class="content">
@@ -60,22 +60,22 @@
           type="password"
           placeholder="请输入确认密码"
           v-validate="{ required: true, ConfirmPassword: password1 }"
-          name="确认密码"
+          name="password2"
         />
-        <span v-show="errors.first('确认密码')" class="error-msg">{{
-          errors.first("确认密码")
+        <span v-show="errors.first('password2')" class="error-msg">{{
+          errors.first("password2")
         }}</span>
       </div>
       <div class="controls">
         <input
           v-model="agree"
-          name="用户协议"
+          name="agree"
           v-validate="'required'"
           type="checkbox"
         />
         <span>同意协议并注册《尚品汇用户协议》</span>
-        <span v-show="errors.first('用户协议')" class="error-msg">{{
-          errors.first("用户协议")
+        <span v-show="errors.first('agree')" class="error-msg">{{
+          errors.first("agree")
         }}</span>
       </div>
       <div class="btn">
@@ -115,7 +115,7 @@ export default {
   },
   methods: {
     async getRegisterCode() {
-      await this.$validator.validate("手机号").then(async (e) => {
+      await this.$validator.validate("phone").then(async (e) => {
         if (e) {
           await this.$store.dispatch("register/getRegisterCode", this.phone);
           this.code = this.$store.state.register.code;

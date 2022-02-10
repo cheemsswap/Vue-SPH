@@ -3101,5 +3101,59 @@ Vue.component(CarouselItem.name, CarouselItem);
         } 
 </pre>
 
+# 第一百零八步 优化vee表单验证->对name进行覆盖改名
+<pre>
+    ---utils
+        ---validate.js
+        核心代码:
+        Vue.use(VeeValidate, {
+            i18n,
+            i18nRootKey: 'validation',
+            dictionary: {
+                zh_CN: {
+                    messages: zh_CN.messages,
+                    attributes: {
+                        phone: '手机号',
+                        code: '验证码',
+                        password1: '登录密码',
+                        password2: '确认密码',
+                        agree: '用户协议'
+                    }
+                }
+            },
+        });
+    ---view
+        ---Register
+            ---index.vue
+        不再使用name为中文 全部替换成英文单词
+</pre>
+# 第一百零九步 优化->路由懒加载
+<pre>
+    ---router
+        ---index.js
+        核心代码:
+        //路由懒加载
+        const Home = () => import('@/views/Home')
+        const Login = () => import('@/views/Login')
+        const Register = () => import('@/views/Register')
+        const Search = () => import('@/views/Search')
+        const Detail = () => import('@/views/Detail')
+        const AddCartSuccess = () => import('@/views/AddCartSuccess')
+        const ShopCart = () => import('@/views/ShopCart')
+        const Trade = () => import('@/views/Trade')
+        const Pay = () => import('@/views/Pay')
+        const PaySuccess = () => import('@/views/PaySuccess')
+        const Center = () => import('@/views/Center')
+        const MyOrder = () => import('@/views/Center/MyOrder')
+        const GroupOrder = () => import('@/views/Center/GroupOrder')
+</pre>
+
+# 第一百一十步 打包优化->不需要生产环境的 source map
+<pre>
+    ---vue.config.js
+        核心代码:
+        productionSourceMap: false
+</pre>
+
 
 

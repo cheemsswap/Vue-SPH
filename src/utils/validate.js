@@ -10,12 +10,20 @@ Vue.use(VeeValidate, {
     i18n,
     i18nRootKey: 'validation',
     dictionary: {
-        zh_CN
-    }
+        zh_CN: {
+            messages: zh_CN.messages,
+            attributes: {
+                phone: '手机号',
+                code: '验证码',
+                password1: '登录密码',
+                password2: '确认密码',
+                agree: '用户协议'
+            }
+        }
+    },
 });
 Validator.extend('required', {
     getMessage: (field) => {
-        //fidld为name的参数
         return field + '不能为空'
     },
     validate: value => {
@@ -39,7 +47,7 @@ Validator.extend('ConfirmPassword', {
         return false
     }
 })
-//表单校验 在注册页面使用到了
+
 
 
 
