@@ -10,7 +10,8 @@
     
     或者 直接可以运行的程序 右侧下载 v0.0.1 window.zip 已经打包好在nginx中
 </pre>
-
+# 效果图
+![image](https://objects.githubusercontent.com/github-production-release-asset-2e65be/450081491/d9522c11-b690-438a-9c9e-c11bc7a53236?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIWNJYAX4CSVEH53A%2F20220210%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20220210T094350Z&X-Amz-Expires=300&X-Amz-Signature=59a9c7a23383791f31c3acef06b822c8078d9923d13230a83a46fc798c1b11cf&X-Amz-SignedHeaders=host&actor_id=34093707&key_id=0&repo_id=450081491&response-content-disposition=attachment%3B%20filename%3Ddefault.png&response-content-type=application%2Foctet-stream)
 # 以下为我的开发记录
 # 第一步 添加项目运行时自动打开浏览器
 <pre>
